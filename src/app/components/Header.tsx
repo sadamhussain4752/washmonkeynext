@@ -62,7 +62,7 @@ export default function Header() {
     { path: "/", label: "Home", icon: <House size={18} /> },
     { path: "/about", label: "About Us", icon: <User size={18} /> },
     { path: "/services", label: "Services", icon: <ShoppingBag size={18} /> },
-        { path: "/help", label: "Help & Support", icon: <HelpCircle size={18} /> },
+    { path: "/help", label: "Help & Support", icon: <HelpCircle size={18} /> },
 
     { path: "/contact", label: "Contact Us", icon: <Phone size={18} /> },
   ];
@@ -71,21 +71,41 @@ export default function Header() {
     //  { route: "/", label: "Home", icon: <House size={20} /> },
     // { route: "/services", label: "Services", icon: <ShoppingBag size={20} /> },
     // { route: "/help", label: "Help", icon: <HelpCircle size={20} /> },
-    { label: "My Profile", icon: <User size={20} color="red"/>, route: "/profile" },
-    { label: "My Orders", icon: <Package size={20} color="red"/>, route: "/orders" },
+    { label: "My Profile", icon: <User size={20} color="red" />, route: "/profile" },
+    { label: "My Orders", icon: <Package size={20} color="red" />, route: "/orders" },
 
-    { label: "Vehicles", icon: <Car size={20} color="red"/>, route: "/vehicles" },
-    { label: "Addresses", icon: <MapPin size={20} color="red"/>, route: "/addresses" },
-    { label: "Transaction History", icon: <Wallet size={20} color="red"/>, route: "/wallet" },
+    { label: "Vehicles", icon: <Car size={20} color="red" />, route: "/vehicles" },
+    { label: "Addresses", icon: <MapPin size={20} color="red" />, route: "/addresses" },
+    { label: "Transaction History", icon: <Wallet size={20} color="red" />, route: "/wallet" },
     {
       label: "T & C",
-      icon: <FileText size={20} color="red"/>,
+      icon: <FileText size={20} color="red" />,
       url: "https://washmonkey.in/terms-and-conditions.html",
     },
-    { label: "Share App", icon: <Share2 size={20} color="red"/>, action: "share" },
-    { label: "Rate Our App", icon: <Star size={20} color="red"/>, action: "rate" },
-    { label: "Help & Support", icon: <HelpCircle size={20} color="red"/>, route: "/help" },
-    { label: "Logout", icon: <LogOut size={20} color="red"/>, action: "logout" },
+    { label: "Share App", icon: <Share2 size={20} color="red" />, action: "share" },
+    { label: "Rate Our App", icon: <Star size={20} color="red" />, action: "rate" },
+    { label: "Help & Support", icon: <HelpCircle size={20} color="red" />, route: "/help" },
+    { label: "Logout", icon: <LogOut size={20} color="red" />, action: "logout" },
+    // {
+    //   label: "Delete Account",
+    //   icon: <Trash2 size={20} className="text-red-600" />,
+    //   action: "delete",
+    // },
+  ];
+
+  const userNavItemsLog: NavItem[] = [
+    
+    {
+      label: "T & C",
+      icon: <FileText size={20} color="red" />,
+      url: "https://washmonkey.in/terms-and-conditions.html",
+    },
+    { label: "Share App", icon: <Share2 size={20} color="red" />, action: "share" },
+    { label: "Rate Our App", icon: <Star size={20} color="red" />, action: "rate" },
+    { label: "Help & Support", icon: <HelpCircle size={20} color="red" />, route: "/help" },
+        { label: "Login", icon: <LogOut size={20} color="red" />, route: "/login" },
+
+    // { label: "Logout", icon: <LogOut size={20} color="red" />, action: "logout" },
     // {
     //   label: "Delete Account",
     //   icon: <Trash2 size={20} className="text-red-600" />,
@@ -128,7 +148,7 @@ export default function Header() {
       case "logout":
         localStorage.clear();
         router.push("/login");
-window.location.href = "/login";
+        window.location.href = "/login";
 
 
         break;
@@ -172,8 +192,8 @@ window.location.href = "/login";
               key={item.path}
               href={item.path}
               className={`font-medium transition ${pathname === item.path
-                  ? "text-red-600"
-                  : "text-gray-600 hover:text-red-600"
+                ? "text-red-600"
+                : "text-gray-600 hover:text-red-600"
                 }`}
             >
               {item.label}
@@ -191,7 +211,7 @@ window.location.href = "/login";
               className="flex items-center gap-1 font-medium text-gray-600 hover:text-red-600"
             >
               ₹{user.loyalty_point ?? 0} <Wallet className="w-4 h-4" />
-             
+
             </Link>
           )}
 
@@ -234,13 +254,13 @@ window.location.href = "/login";
 
                 {user.mainAddress && (
                   <div className="flex items-start gap-2 text-xs text-gray-600 mb-3">
-                    <MapPin className="w-4 h-4 mt-0.5" color="red"/>
+                    <MapPin className="w-4 h-4 mt-0.5" color="red" />
                     <span>{user.mainAddress.city}, {user.mainAddress.state}</span>
                   </div>
                 )}
 
                 {/* DYNAMIC USER NAV ITEMS */}
-                {userNavItems.map((item) =>
+                { userNavItems.map((item) =>
                   item.route ? (
                     <Link
                       key={item.label}
@@ -274,9 +294,13 @@ window.location.href = "/login";
             </Popover>
           )}
 
-          <Link href="/services">
-            <Button>Book Now</Button>
-          </Link>
+          
+  <Button className="flex items-center gap-2" onClick={()=>{
+    !user ? router.push('/login') : handleAction('logout')
+  }}>
+    <User size={18} />
+   {!user ? "Login" : "logout"}
+  </Button>
         </div>
 
         {/* MOBILE MENU */}
@@ -290,31 +314,57 @@ window.location.href = "/login";
 
           <SheetContent>
             <div className="flex flex-col gap-6 mt-8 p-10">
-           {!loading && user && (
+              {!loading && user && (
                 <div className="mb-4">
                   <p className="font-semibold">{user.firstname} {user.lastname}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
                   {user.mainAddress && (
                     <div className="flex items-start gap-2 text-xs text-gray-600 mt-1">
-                      <MapPin className="w-4 h-4 mt-0.5" color="red"/>
+                      <MapPin className="w-4 h-4 mt-0.5" color="red" />
                       <span>{user.mainAddress.city}, {user.mainAddress.state}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 mt-2 font-medium">
-                    <Wallet className="w-5 h-5" color="red"/>
+                    <Wallet className="w-5 h-5" color="red" />
                     <span>₹{user.loyalty_point ?? 0}</span>
                   </div>
                 </div>
               )}
 
 
-             
+
 
 
               {/* WALLET & PHONE */}
 
               {/* USER NAV ITEMS */}
-              {user && userNavItems.map((item) =>
+              {user ?
+              
+              userNavItems.map((item) =>
+                item.route ? (
+                  <SheetClose asChild key={item.label}>
+                    <Link href={item.route} className="flex gap-2 items-center text-black-600 font-medium">
+                      {item.icon} {item.label}
+                    </Link>
+                  </SheetClose>
+                ) : item.url ? (
+                  <SheetClose asChild key={item.label}>
+                    <a href={item.url} target="_blank" className="flex gap-2 items-center text-black-600 font-medium">
+                      {item.icon} {item.label}
+                    </a>
+                  </SheetClose>
+                ) : (
+                  <SheetClose asChild key={item.label}>
+                    <button
+                      onClick={() => handleAction(item.action)}
+                      className={`flex gap-2 items-center w-full ${item.action === "delete" ? "text-red-600" : ""
+                        }`}
+                    >
+                      {item.icon} {item.label}
+                    </button>
+                  </SheetClose>
+                )
+              ) : userNavItemsLog.map((item) =>
                 item.route ? (
                   <SheetClose asChild key={item.label}>
                     <Link href={item.route} className="flex gap-2 items-center text-black-600 font-medium">
@@ -341,9 +391,9 @@ window.location.href = "/login";
               )}
               {!loading && user && (
                 <>
-                  
+
                   <a href="tel:+919876543210" className="flex items-center gap-2  text-black-600 font-medium mt-5">
-                    <Phone className="w-5 h-5" color="red"/> +91 98765 43210
+                    <Phone className="w-5 h-5" color="red" /> +91 98765 43210
                   </a>
                 </>
               )}
