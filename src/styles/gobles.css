@@ -1,0 +1,269 @@
+.login-wrapper {
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card {
+  background: #fff;
+  width: 400px;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+
+.subtitle {
+  color: #777;
+  margin-bottom: 20px;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  outline: none;
+}
+
+.password-box {
+  position: relative;
+}
+
+.toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #d22f2f;
+  font-size: 14px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #d22f2f;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+
+.btn-secondary {
+  margin-top: 10px;
+  background: transparent;
+  border: none;
+  color: #555;
+  cursor: pointer;
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #d22f2f;
+  cursor: pointer;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+/* OTP */
+.otp-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.otp-card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  width: 300px;
+}
+
+.otp-inputs {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+
+.otp-inputs input {
+  width: 40px;
+  height: 45px;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+/* Desktop only */
+@media (min-width: 992px) {
+  .container-min {
+    padding: 60px 80px; /* adjust as needed */
+  }
+}
+
+.categories-container {
+  padding: 20px;
+}
+
+/* Header */
+.categories-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.categories-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.view-all-btn {
+  background: transparent;
+  border: 1px solid #b70000;
+  color: #b70000;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.view-all-btn:hover {
+  background: #b70000;
+  color: #fff;
+}
+
+/* Grid */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+/* Card */
+.category-card {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 15px 10px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #b44d4d;
+  border-bottom: 3px solid #b70000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Image */
+.category-image {
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  
+}
+
+/* Text */
+.category-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #b70000;
+  margin: 0;
+}
+
+
+.order-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+
+.product-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.product-row img {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+}
+
+.task-card {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.reschedule-btn {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px;
+  width: 400px;
+  border-radius: 10px;
+}
+
+.task-option {
+  display: block;
+  margin: 8px 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.loader {
+  text-align: center;
+  margin-top: 40px;
+}
