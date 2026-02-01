@@ -9,6 +9,7 @@ import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
 import Categories from "@/app/components/Categories";
 import PlansSection from "@/app/components/PlansSection";
+import HeroSection from "@/app/components/HeroSection";
 
 export default function Page() {
   const highlights = [
@@ -52,36 +53,7 @@ export default function Page() {
       {/* Hero Section */}
 
 
-      <section className="relative min-h-screen flex items-center bg-gradient-to-br from-red-600 via-red-500 to-gray-400 text-white">
-  <div className="container mx-auto px-4 py-20 md:py-32 container-min">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <h1 className="mb-6 text-5xl md:text-6xl">
-              Professional Car Cleaning at Your Doorstep
-            </h1>
-            <p className="mb-8 text-xl md:text-2xl opacity-90">
-              Enjoy premium shine, spotless glass, and eco-friendly service — all from the comfort of your home.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/services">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Explore Services
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link href="/services">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white text-red-600 hover:bg-gray-100">
-                  Schedule Now
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-</section>
+     <HeroSection/>
 <Categories/>
 <PlansSection/>
 

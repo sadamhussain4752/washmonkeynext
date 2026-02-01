@@ -11,6 +11,7 @@ import {
   Wallet,
   ShoppingCart,
   CreditCard,
+  User
 } from "lucide-react";
 
 const Order = () => {
@@ -18,6 +19,8 @@ const Order = () => {
 
   /* ---------------- CART STATE ---------------- */
   const [cartItems, setCartItems] = useState([]);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
   const [subTotal, setSubTotal] = useState(0);
   const delivery = 0;
 
@@ -73,7 +76,8 @@ useEffect(() => {
         );
         setWallet(res.data?.User?.loyalty_point || 0);
       } catch {
-          router.push("/login");
+           setShowLoginPopup(true);
+
       }
     };
 
@@ -154,10 +158,10 @@ const handleCheckout = () => {
   const userId = localStorage.getItem("userId");
 
   // If user is not logged in, redirect to login page
-  if (!userId) {
-    router.push("/login");
-    return;
-  }
+if (!userId) {
+  setShowLoginPopup(true);
+  return;
+}
 
   // If cart is empty, do nothing
   if (!cartItems.length) return;
@@ -327,6 +331,40 @@ const handleCheckout = () => {
           Pay ₹{total}
         </button>
       </div>
+      {/* LOGIN REQUIRED POPUP */}
+{showLoginPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md text-center">
+      
+      <User className="mx-auto mb-3 text-red-600" size={40} />
+
+      <h3 className="text-lg font-semibold mb-2">
+        Login Required
+      </h3>
+
+      <p className="text-sm text-gray-600 mb-6">
+        Please login to continue with your order and make payment.
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => router.push("/login")}
+          className="flex-1 bg-red-600 text-white py-2 rounded-xl"
+        >
+          Login
+        </button>
+
+        <button
+          onClick={() => setShowLoginPopup(false)}
+          className="flex-1 border py-2 rounded-xl"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

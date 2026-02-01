@@ -59,9 +59,12 @@ export default function Header() {
 
 
   const desktopNavItems = [
-    { path: "/", label: "Home", icon: <House size={20} /> },
-    { path: "/services", label: "Services", icon: <ShoppingBag size={20} /> },
-    { path: "/help", label: "Help", icon: <HelpCircle size={20} /> },
+    { path: "/", label: "Home", icon: <House size={18} /> },
+    { path: "/about", label: "About Us", icon: <User size={18} /> },
+    { path: "/services", label: "Services", icon: <ShoppingBag size={18} /> },
+        { path: "/help", label: "Help & Support", icon: <HelpCircle size={18} /> },
+
+    { path: "/contact", label: "Contact Us", icon: <Phone size={18} /> },
   ];
 
   const userNavItems: NavItem[] = [
@@ -125,6 +128,9 @@ export default function Header() {
       case "logout":
         localStorage.clear();
         router.push("/login");
+window.location.href = "/login";
+
+
         break;
       case "share":
         if (navigator.share) {

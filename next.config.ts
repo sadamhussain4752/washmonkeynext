@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-   images: {
-    domains: ['storage.googleapis.com'],
+  output: "export",
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+    domains: [
+      "images.pexels.com",
+      "storage.googleapis.com",
+    ],
   },
 };
 

@@ -34,7 +34,7 @@ const SignIn: React.FC = () => {
   const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [otpError, setOtpError] = useState<string>("");
 
-const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const isMobile = (v: string): boolean => /^[0-9]{10}$/.test(v);
   const isEmail = (v: string): boolean =>
@@ -53,7 +53,7 @@ const inputs = useRef<(HTMLInputElement | null)[]>([]);
     try {
       // 📱 Mobile login
       if (isMobile(emailOrMobile)) {
-        const payload : any=
+        const payload: any =
           password.length > 0
             ? { mobilenumber: emailOrMobile, password, isMobileLogin: false }
             : { mobilenumber: emailOrMobile, isMobileLogin: true };
@@ -66,7 +66,8 @@ const inputs = useRef<(HTMLInputElement | null)[]>([]);
         }
 
         localStorage.setItem("userId", res.userId);
-        router.push("/");
+       window.location.href = "/";
+
         return;
       }
 
@@ -82,12 +83,14 @@ const inputs = useRef<(HTMLInputElement | null)[]>([]);
           password,
         }).unwrap()) as LoginResponse;
 
-        if (res.UserType !== "3") {
-          await loginWithLocation(res.userId);
-        }
+       if (res.UserType !== "3") {
+  alert("Employees are not allowed to log in to this portal.");
+  return;
+}
 
         localStorage.setItem("userId", res.userId);
-        router.push("/");
+       window.location.href = "/";
+
         return;
       }
 
@@ -113,7 +116,9 @@ const inputs = useRef<(HTMLInputElement | null)[]>([]);
       }).unwrap()) as LoginResponse;
 
       localStorage.setItem("userId", res.userId);
-      router.push("/");
+      window.location.href = "/";
+
+      return;
     } catch {
       setOtpError("Invalid OTP");
     }
@@ -168,8 +173,8 @@ const inputs = useRef<(HTMLInputElement | null)[]>([]);
           {isLoading
             ? "Signing in..."
             : isMobile(emailOrMobile) && !password
-            ? "Send OTP"
-            : "Sign In"}
+              ? "Send OTP"
+              : "Sign In"}
         </button>
 
         {error && (
@@ -198,9 +203,9 @@ const inputs = useRef<(HTMLInputElement | null)[]>([]);
               {otpDigits.map((digit, i) => (
                 <input
                   key={i}
-ref={(el) => {
-  inputs.current[i] = el;
-}}
+                  ref={(el) => {
+                    inputs.current[i] = el;
+                  }}
                   maxLength={1}
                   value={digit}
                   onChange={(e) =>
