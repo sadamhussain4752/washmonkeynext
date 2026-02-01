@@ -10,7 +10,7 @@ import { Card } from "@/app/components/ui/card";
 // import { components } from "@/app/components";
 // import { theme } from "@/app/constants";
 
-import { BASE_URL } from "@/utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 interface Message {
   sender: "user" | "admin";

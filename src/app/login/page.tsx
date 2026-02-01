@@ -6,7 +6,7 @@ import {
   useLoginUserMutation,
   useVerifyOtpMutation,
 } from "@/store/slices/apiSlice";
-import { BASE_URL } from "../utils/config";
+import { BASE_URL } from "@/app/utils/config";
 import { useRouter } from "next/navigation";
 
 type LoginResponse = {

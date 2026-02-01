@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import moment from "moment";
 import { useRouter } from "next/navigation"; // ✅ Next.js router
-import { BASE_URL } from "../utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 import {
   MapPin,

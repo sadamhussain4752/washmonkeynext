@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Card } from "@/app/components/ui/card";
-import { BASE_URL } from "../utils/config";
+import { BASE_URL } from "@/app/utils/config";
 import { useRouter } from "next/navigation";
 const PlansSection = () => {
   const router = useRouter()

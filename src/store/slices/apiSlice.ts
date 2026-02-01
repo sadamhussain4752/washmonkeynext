@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { BASE_URL, AUTHORIZATION_TOKEN, ENDPOINTS } from '@/utils/config';
+import { BASE_URL, AUTHORIZATION_TOKEN, ENDPOINTS } from '@/app/utils/config';
 
 import {
   ProductType,

@@ -7,7 +7,7 @@ import { Card } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { User, MapPin, Package, Image as ImageIcon, Trash2, Share2 } from "lucide-react";
-import { BASE_URL } from "../utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 type Address = {
   _id?: string;

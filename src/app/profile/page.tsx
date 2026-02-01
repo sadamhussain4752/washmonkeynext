@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { BASE_URL } from "@/utils/config";
+import { BASE_URL } from "@/app/utils/config";
 import {
   User,
   Car,

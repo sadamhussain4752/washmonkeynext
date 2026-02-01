@@ -17,7 +17,7 @@ import {
 // import { components } from "@/app/components";
 import { Phone, Mail, MessageCircle, Clock, HelpCircle } from "lucide-react";
 
-import { BASE_URL } from "@/utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 interface Ticket {
     _id: string;

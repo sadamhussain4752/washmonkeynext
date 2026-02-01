@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/app/components/ui/select";
 
-import { BASE_URL } from "../utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 export default function ServicesClient() {
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { BASE_URL } from "@/utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 interface Task {
   _id: string;

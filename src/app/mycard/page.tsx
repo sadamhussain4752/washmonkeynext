@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { BASE_URL, ENDPOINTS } from "../utils/config";
+import { BASE_URL ,ENDPOINTS} from "@/app/utils/config";
 import {
   Delete,
   Tag,

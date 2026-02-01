@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BASE_URL } from "../utils/config";
+import { BASE_URL } from "@/app/utils/config";
 
 type Category = {
   _id: string;
