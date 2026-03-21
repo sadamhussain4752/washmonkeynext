@@ -141,7 +141,7 @@ export default function Page() {
       </section>
 
       {/* Popular Plans Section */}
-      <section className="py-16 bg-gray-50">
+      {/* <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 container-min">
           <h2 className="text-center mb-4">Our Popular Plans</h2>
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
@@ -193,7 +193,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
       {/* How It Works */}
 <section className="py-16 bg-gray-50">
   <div className="container mx-auto px-4 container-min">
