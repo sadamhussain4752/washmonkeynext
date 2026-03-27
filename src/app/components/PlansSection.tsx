@@ -20,7 +20,7 @@ const PlansSection = () => {
       .then((data) => {
         if (data?.success) {
           const sortedPlans = (data.products || []).sort(
-            (a, b) => a.price - b.price
+            (a: any, b: any) => a.price - b.price
           );
 
           setPlans(sortedPlans);

@@ -221,7 +221,7 @@ export default function HelpAndSupportPage() {
       {tickets.map((ticket: any) => {
         const status = ticket.status || "pending";
 
-        const statusStyle = {
+        const statusStyle : any = {
           solved: "text-green-600",
           inprogress: "text-orange-500",
           cancelled: "text-red-500",
@@ -229,7 +229,7 @@ export default function HelpAndSupportPage() {
           pending: "text-gray-500",
         };
 
-        const statusLabel = {
+        const statusLabel : any= {
           solved: "Solved",
           inprogress: "Inprogress",
           cancelled: "Cancelled",
