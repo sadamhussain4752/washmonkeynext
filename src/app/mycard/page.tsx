@@ -1,72 +1,32 @@
-'use client'
+"use client";
 
-
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { BASE_URL ,ENDPOINTS} from "@/app/utils/config";
-import {
-  Delete,
-  Tag,
-  Wallet,
-  ShoppingCart,
-  CreditCard,
-  User
-} from "lucide-react";
+import { BASE_URL, ENDPOINTS } from "@/app/utils/config";
 
-const Order = () => {
+export default function OrderPage() {
   const router = useRouter();
 
-  /* ---------------- CART STATE ---------------- */
-  const [cartItems, setCartItems] = useState([]);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
-
-  const [subTotal, setSubTotal] = useState(0);
-  const delivery = 0;
-
-  /* ---------------- DISCOUNT & WALLET ---------------- */
+  const [cart, setCart] = useState<any[]>([]);
   const [promocode, setPromocode] = useState("");
   const [discount, setDiscount] = useState(0);
+
   const [wallet, setWallet] = useState(0);
-  const [walletAmount, setWalletAmount] = useState("");
-  const [walletDiscount, setWalletDiscount] = useState(0);
-const [total, setTotal] = useState<any>(0);
+  const [walletInput, setWalletInput] = useState("");
+  const [walletUsed, setWalletUsed] = useState(0);
 
   const [loading, setLoading] = useState(false);
-  const [walletLoading, setWalletLoading] = useState(false);
 
-  /* ---------------- LOAD CART ---------------- */
-useEffect(() => {
-  localStorage.removeItem("checkoutData");
-
-  const storedCart: any = JSON.parse(localStorage.getItem("cart") || "[]");
-  setCartItems(storedCart);
-
-  const sum = storedCart.reduce(
-    (total: number, item: any) => total + Number(item.price || 0),
-    0
-  );
-  setSubTotal(sum);
-}, []);
-
-/* ---------------- TOTAL ---------------- */
-useEffect(() => {
-  // Ensure all values are numeric and default to 0 if invalid
-  const safeSubTotal = Number(subTotal) || 0;
-  const safeDelivery = Number(delivery) || 0;
-  const safeDiscount = Number(discount) || 0;
-  const safeWalletDiscount = Number(walletDiscount) || 0;
-
-  const calculated = safeSubTotal + safeDelivery - safeDiscount - safeWalletDiscount;
-
-  // Prevent negative total
-  setTotal(Math.max(calculated, 0).toFixed(2));
-}, [subTotal, delivery, discount, walletDiscount]);
-
-
-  /* ---------------- FETCH WALLET ---------------- */
+  /* ================= LOAD CART ================= */
   useEffect(() => {
-    const fetchUser = async () => {
+    const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCart(storedCart);
+  }, []);
+
+  /* ================= FETCH WALLET ================= */
+  useEffect(() => {
+    const fetchWallet = async () => {
       const userId = localStorage.getItem("userId");
       if (!userId) return;
 
@@ -75,298 +35,275 @@ useEffect(() => {
           `${BASE_URL}${ENDPOINTS.get.usersgetid}/${userId}`
         );
         setWallet(res.data?.User?.loyalty_point || 0);
-      } catch {
-           setShowLoginPopup(true);
-
+      } catch (err) {
+        console.log(err);
       }
     };
 
-    fetchUser();
-  }, [router]);
+    fetchWallet();
+  }, []);
 
-  /* ---------------- REMOVE ITEM ---------------- */
-  const handleRemoveItem = (id: any) => {
-    const updatedCart = cartItems.filter(
-      (item: any) => item.id !== id && item._id !== id
-    );
+  /* ================= CALCULATIONS ================= */
+  const subtotal = cart.reduce(
+    (sum, item) => sum + Number(item.price || 0),
+    0
+  );
 
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  const netTotal = subtotal - discount - walletUsed;
+  const gst = netTotal > 0 ? netTotal * 0.18 : 0;
+  const total = netTotal > 0 ? netTotal + gst : 0;
 
-    const newSubtotal = updatedCart.reduce(
-      (sum: any, item: any) => sum + Number(item.price || 0),
-      0
-    );
-
-    setSubTotal(newSubtotal);
-    setDiscount(0);
-    setWalletDiscount(0);
-    setPromocode("");
-    setWalletAmount("");
-  };
-
-  /* ---------------- PROMO ---------------- */
-  const applyPromoCode = async () => {
+  /* ================= APPLY COUPON ================= */
+  const applyCoupon = async () => {
     if (!promocode) return;
+
     setLoading(true);
 
     try {
       const userId = localStorage.getItem("userId");
-      const res = await axios.post(
-        BASE_URL + ENDPOINTS.get.discount,
-        { couponCode: promocode, userId }
-      );
+
+      const res = await axios.post(BASE_URL + ENDPOINTS.get.discount, {
+        couponCode: promocode,
+        userId,
+      });
 
       if (res.data?.success) {
-        const promoValue =
-          (subTotal * Number(res.data.bodysend?.discount || 0)) / 100;
-        setDiscount(promoValue);
-        alert("Coupon applied");
+        const type = res.data.bodysend?.coupon_type;
+        let value = 0;
+
+        if (type === "PERCENTAGE") {
+          value = (subtotal * Number(res.data.bodysend.discount)) / 100;
+        } else {
+          value = Number(res.data.bodysend.discount);
+        }
+
+        setDiscount(value);
+        alert("Coupon Applied 🎉");
       } else {
         alert("Invalid coupon");
       }
     } catch {
-      alert("Something went wrong");
+      alert("Error applying coupon");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------------- WALLET ---------------- */
-  const applyWalletDiscount = () => {
-    setWalletLoading(true);
-    const amount = Number(walletAmount);
-
-    if (!amount || amount <= 0 || amount > wallet) {
-      alert("Invalid wallet amount");
-      setWalletLoading(false);
-      return;
-    }
-
-    if (amount > subTotal - discount) {
-      alert("Wallet exceeds payable");
-      setWalletLoading(false);
-      return;
-    }
-
-    setWalletDiscount(amount);
-    setWalletLoading(false);
+  const removeCoupon = () => {
+    setDiscount(0);
+    setPromocode("");
   };
 
-  /* ---------------- CHECKOUT ---------------- */
-const handleCheckout = () => {
-  const userId = localStorage.getItem("userId");
+  /* ================= WALLET ================= */
+  const applyWallet = () => {
+    const amount = Number(walletInput);
 
-  // If user is not logged in, redirect to login page
-if (!userId) {
-  setShowLoginPopup(true);
-  return;
-}
+    if (!amount || amount <= 0) return alert("Enter valid amount");
+    if (amount > wallet) return alert("Exceeds wallet balance");
+    if (amount > subtotal - discount)
+      return alert("Wallet exceeds payable");
 
-  // If cart is empty, do nothing
-  if (!cartItems.length) return;
+    setWalletUsed(amount);
+  };
 
-  // Save checkout data to localStorage
-  localStorage.setItem(
-    "checkoutData",
-    JSON.stringify({
-      cart: cartItems,
-      subtotal: subTotal,
-      discount,
-      delivery,
-      walletDiscount,
-      promocode,
-      total,
-    })
-  );
+  const removeWallet = () => {
+    setWalletUsed(0);
+    setWalletInput("");
+  };
 
-  // Navigate to checkout page
-  router.push("/checkout");
-};
+  /* ================= CHECKOUT ================= */
+  const checkout = () => {
+    if (!cart.length) return;
 
-  /* ---------------- EMPTY CART ---------------- */
-  if (!cartItems.length) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
-        <ShoppingCart size={52} className="text-gray-300 mb-4" />
-        <h2 className="text-xl font-semibold">Your cart is empty</h2>
-        <p className="text-gray-500">Add services to continue</p>
-      </div>
+    localStorage.setItem(
+      "checkoutData",
+      JSON.stringify({
+        cart,
+        subtotal,
+        discount,
+        walletUsed,
+        gst,
+        total,
+      })
     );
-  }
 
-  /* ---------------- UI ---------------- */
+    router.push("/checkout");
+  };
+
+  const item = cart[0];
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 min-h-screen">
+    <div className="min-h-screen bg-[#F6F7F9] pb-28">
 
       {/* HEADER */}
-      <h2 className="flex items-center gap-2 text-xl font-semibold mb-6">
-        <ShoppingCart size={22} />
-        Your Cart
-      </h2>
+      <div className="flex items-center gap-3 px-4 py-3 bg-white shadow-sm md:px-10">
+        <button onClick={() => router.back()} className="text-lg">←</button>
+        <h2 className="text-base font-semibold text-gray-800">Summary</h2>
+      </div>
 
-      {/* MAIN GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ================= MAIN ================= */}
+      <div className="md:max-w-6xl md:mx-auto md:grid md:grid-cols-2 md:gap-8 md:mt-8">
 
-        {/* LEFT – CART ITEMS */}
-        <div className="lg:col-span-2 space-y-4">
-          {cartItems.map((item: any) => (
-            <div
-              key={item.id || item._id}
-              className="border rounded-xl p-4 flex items-center gap-4"
-            >
+        {/* ================= LEFT ================= */}
+        <div>
+
+          {/* PRODUCT */}
+          {item && (
+            <div className="flex flex-col items-center px-4 py-5 bg-white md:rounded-xl md:shadow-sm">
               <img
-                src={item.item.image}
-                alt={item.name}
-                className="h-20 w-20 rounded-lg object-cover"
+                src={item?.item?.image}
+                className="h-36 object-contain"
               />
 
-              <div className="flex-1">
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-gray-500">{item.item.weight}</p>
-                <p className="font-semibold mt-1">₹{item.price}</p>
+              <h3 className="mt-3 text-sm font-semibold text-red-600">
+                {item?.name}
+              </h3>
+
+              <p className="text-xs text-gray-500">
+                {item?.item?.category?.[0]}
+              </p>
+
+              <div className="mt-2 border border-red-500 px-4 py-1 rounded-full text-red-600 font-semibold text-sm">
+                ₹{item?.price} / Month
               </div>
-
-              <button
-                onClick={() => handleRemoveItem(item.id || item._id)}
-                className="p-2 rounded-full hover:bg-red-50 text-red-600"
-              >
-                <Delete size={18} />
-              </button>
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* RIGHT – SUMMARY */}
-        <div className="border rounded-xl p-5 space-y-4 h-fit sticky top-6">
+          {/* INPUTS */}
+          <div className="px-4 mt-4 space-y-4 md:px-0">
 
-          {/* PROMO */}
-          {!discount && (
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            {/* COUPON */}
+            <div className="bg-white md:rounded-xl md:shadow-sm p-4">
+              <p className="text-sm font-medium mb-2 text-gray-700">
+                Coupon / Promocode
+              </p>
+
+              <div className="flex border rounded-xl overflow-hidden">
                 <input
                   value={promocode}
                   onChange={(e) => setPromocode(e.target.value)}
-                  placeholder="Promo code"
-                  className="w-full border rounded-lg pl-9 py-2 text-sm"
+                  disabled={discount > 0}
+                  placeholder="Enter your promocode"
+                  className="flex-1 px-3 py-2 text-sm outline-none"
                 />
-              </div>
-              <button
-                onClick={applyPromoCode}
-                className="bg-red-600 text-white px-4 rounded-lg text-sm"
-              >
-                {loading ? "..." : "Apply"}
-              </button>
-            </div>
-          )}
 
-          {/* WALLET */}
-          {wallet > 0 && !walletDiscount && (
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Wallet size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <button
+                  onClick={discount ? removeCoupon : applyCoupon}
+                  className={`px-4 text-sm font-medium ${
+                    discount
+                      ? "text-red-600"
+                      : "bg-red-600 text-white"
+                  }`}
+                >
+                  {loading ? "..." : discount ? "Remove" : "Apply"}
+                </button>
+              </div>
+            </div>
+
+            {/* WALLET */}
+            <div className="bg-white md:rounded-xl md:shadow-sm p-4">
+              <div className="flex justify-between text-sm mb-2">
+                <p className="text-gray-700">Wallet Amount</p>
+                <p className="text-gray-400 text-xs">
+                  Available: ₹{wallet.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="flex border rounded-xl overflow-hidden">
                 <input
                   type="number"
-                  value={walletAmount}
-                  onChange={(e) => setWalletAmount(e.target.value)}
-                  placeholder={`Wallet ₹${wallet}`}
-                  className="w-full border rounded-lg pl-9 py-2 text-sm"
+                  value={walletUsed ? walletUsed : walletInput}
+                  onChange={(e) => setWalletInput(e.target.value)}
+                  disabled={walletUsed > 0}
+                  placeholder="Enter wallet amount"
+                  className="flex-1 px-3 py-2 text-sm outline-none"
                 />
-              </div>
-              <button
-                onClick={applyWalletDiscount}
-                className="border px-4 rounded-lg text-sm"
-              >
-                {walletLoading ? "..." : "Use"}
-              </button>
-            </div>
-          )}
 
-          {/* PRICE */}
-          <div className="text-sm space-y-2">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₹{subTotal}</span>
+                <button
+                  onClick={walletUsed ? removeWallet : applyWallet}
+                  className={`px-4 text-sm font-medium ${
+                    walletUsed
+                      ? "text-red-600"
+                      : "bg-red-600 text-white"
+                  }`}
+                >
+                  {walletUsed ? "Remove" : "Use"}
+                </button>
+              </div>
             </div>
 
-            {discount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>Discount</span>
-                <span>-₹{discount.toFixed(2)}</span>
-              </div>
-            )}
-
-            {walletDiscount > 0 && (
-              <div className="flex justify-between">
-                <span>Wallet</span>
-                <span>-₹{walletDiscount.toFixed(2)}</span>
-              </div>
-            )}
-
-            <div className="flex justify-between font-semibold pt-2 border-t">
-              <span>Total</span>
-              <span>₹{total}</span>
-            </div>
           </div>
-
-          {/* DESKTOP CHECKOUT */}
-          <button
-            onClick={handleCheckout}
-            className="hidden lg:flex w-full bg-red-600 text-white py-3 rounded-xl items-center justify-center gap-2"
-          >
-            <CreditCard size={18} />
-            Proceed to Pay
-          </button>
         </div>
+
+        {/* ================= RIGHT (DESKTOP) ================= */}
+        <div className="px-4 mt-5 md:mt-0 md:px-0 mb-20">
+
+          <div className="bg-white rounded-xl p-5 shadow-sm md:sticky md:top-24">
+
+            <p className="text-sm font-semibold mb-4 text-gray-700">
+              Bill Summary
+            </p>
+
+            <div className="space-y-3 text-sm ">
+
+              <div className="flex justify-between">
+                <span>{item?.name}</span>
+                <span>₹{subtotal}</span>
+              </div>
+
+              {discount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount</span>
+                  <span>-₹{discount.toFixed(2)}</span>
+                </div>
+              )}
+
+              {walletUsed > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Wallet</span>
+                  <span>-₹{walletUsed.toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between border-t pt-2">
+                <span>Net Total</span>
+                <span>₹{netTotal.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between text-gray-600">
+                <span>GST (18%)</span>
+                <span>₹{gst.toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between font-semibold text-base pt-1">
+                <span>Total Payable</span>
+                <span>₹{total.toFixed(2)}</span>
+              </div>
+
+            </div>
+
+            {/* DESKTOP BUTTON */}
+            <button
+              onClick={checkout}
+              className="hidden md:block w-full mt-5 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-semibold"
+            >
+              Checkout
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      {/* MOBILE STICKY CHECKOUT */}
-      <div className="fixed bottom-20 left-0 right-0 bg-white border-t p-3 lg:hidden">
+      {/* MOBILE BUTTON */}
+      <div className="fixed bottom-15 left-0 right-0 bg-white border-t p-4 md:hidden">
         <button
-          onClick={handleCheckout}
-          className="w-full bg-red-600 text-white py-3 rounded-xl flex items-center justify-center gap-2"
+          onClick={checkout}
+          className="w-full bg-red-600 text-white py-3 rounded-xl text-sm font-semibold"
         >
-          <CreditCard size={18} />
-          Pay ₹{total}
+          Checkout
         </button>
       </div>
-      {/* LOGIN REQUIRED POPUP */}
-{showLoginPopup && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div className="bg-white rounded-2xl p-6 w-[90%] max-w-md text-center">
-      
-      <User className="mx-auto mb-3 text-red-600" size={40} />
-
-      <h3 className="text-lg font-semibold mb-2">
-        Login Required
-      </h3>
-
-      <p className="text-sm text-gray-600 mb-6">
-        Please login to continue with your order and make payment.
-      </p>
-
-      <div className="flex gap-3">
-        <button
-          onClick={() => router.push("/login")}
-          className="flex-1 bg-red-600 text-white py-2 rounded-xl"
-        >
-          Login
-        </button>
-
-        <button
-          onClick={() => setShowLoginPopup(false)}
-          className="flex-1 border py-2 rounded-xl"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
     </div>
   );
-};
-
-export default Order;
+}

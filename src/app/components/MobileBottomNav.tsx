@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Package, HelpCircle, User } from "lucide-react";
+import { Home, Package, HelpCircle, User, Car } from "lucide-react";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -10,31 +10,67 @@ export function MobileBottomNav() {
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
     { path: "/orders", icon: Package, label: "Orders" },
-    { path: "/help", icon: HelpCircle, label: "Help" },
     { path: "/profile", icon: User, label: "Profile" },
+    { path: "/vehicles", icon: Car, label: "Vehicles" },
+    { path: "/help", icon: HelpCircle, label: "Help" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-50">
-      <div className="flex justify-around items-center h-16">
+    <nav className="fixed bottom-3 left-3 right-3 z-50 md:hidden">
+      <div
+        className="flex items-center justify-between h-16 px-2 rounded-2xl 
+        shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
+        style={{
+          background: "var(--primary)",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+        }}
+      >
         {navItems.map((item) => {
-          const isActive = pathname === item.path;
+          const isActive =
+            item.path === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.path);
+
           const Icon = item.icon;
 
           return (
             <Link
               key={item.path}
               href={item.path}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                isActive ? "text-red-600" : "text-gray-600 hover:text-red-600"
-              }`}
+              className="flex flex-col items-center justify-center flex-1 h-full 
+              transition-all duration-300 active:scale-90"
             >
-              <Icon
-                className={`w-6 h-6 mb-1 transition-colors ${
-                  isActive ? "stroke-red-600" : "stroke-gray-600"
+              {/* Active Background */}
+              <div
+                className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-xl 
+                transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
+                ${
+                  isActive
+                    ? "bg-white shadow-lg scale-110 -translate-y-1"
+                    : "bg-transparent"
                 }`}
-              />
-              <span className="text-xs font-medium">{item.label}</span>
+              >
+                {/* Icon */}
+                <Icon
+                  className="w-5 h-5 mb-0.5 transition-all duration-300"
+                  style={{
+                    color: isActive ? "var(--primary)" : "rgba(255,255,255,0.8)",
+                    transform: isActive
+                      ? "scale(1.2) translateY(-2px)"
+                      : "scale(1)",
+                  }}
+                />
+
+                {/* Label */}
+                <span
+                  className="text-[10px] font-medium transition-all duration-300"
+                  style={{
+                    color: isActive ? "var(--primary)" : "rgba(255,255,255,0.8)",
+                  }}
+                >
+                  {item.label}
+                </span>
+              </div>
             </Link>
           );
         })}

@@ -1,236 +1,289 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { Card } from "@/app/components/ui/card";
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { BASE_URL } from "@/app/utils/config";
-import { Trash2, Car } from "lucide-react";
+import { Car } from "lucide-react";
+import { toast } from "sonner";
+import Image from "next/image";
 
-// ----------------- DATA -----------------
+/* =========================
+   MASTER DATA
+========================= */
+
+const BRANDS = [
+  { name: "Audi", image: "/assets/image/brands/car1.png" },
+  { name: "BMW", image: "/assets/image/brands/car9.png" },
+  { name: "Benz", image: "/assets/image/brands/car16.png" },
+  { name: "Honda", image: "/assets/image/brands/car15.png" },
+  { name: "Hyundai", image: "/assets/image/brands/car8.png" },
+  { name: "Kia", image: "/assets/image/brands/car7.png" },
+  { name: "Mahindra", image: "/assets/image/brands/car14.png" },
+  { name: "Maruti Suzuki", image: "/assets/image/brands/car13.png" },
+  { name: "MG", image: "/assets/image/brands/car6.png" },
+  { name: "Nissan", image: "/assets/image/brands/car12.png" },
+  { name: "Range Rover", image: "/assets/image/brands/car11.png" },
+  { name: "Renault", image: "/assets/image/brands/car5.png" },
+  { name: "Skoda", image: "/assets/image/brands/car4.png" },
+  { name: "Tata", image: "/assets/image/brands/car3.png" },
+  { name: "Toyota", image: "/assets/image/brands/car2.png" },
+  { name: "Volkswagen", image: "/assets/image/brands/car10.png" },
+];
+
 const vehicleData: Record<string, string[]> = {
-  Audi: ["A3", "A4", "A6", "e-tron", "Q2", "Q3", "Q5", "Q7", "Q8", "RS / S"],
-  BMW: ["3 Series", "5 Series", "7 Series", "i4", "iX", "X1", "X3", "X5", "X7", "Z4"],
-  Honda: ["Amaze", "City", "Elevate", "Jazz"],
-  Hyundai: ["Alcazar", "Aura", "Creta / Creta N Line", "Exter", "i10 / Grand i10 Nios", "i20 / i20 N Line", "Ioniq 5", "Prime HB", "Prime SD", "Tucson", "Venue / Venue N Line", "Verna"],
-  Kia: ["Carens", "Carnival", "Seltos", "Sonet", "Syros"],
-  Mahindra: ["BE 6", "Bolero / Bolero Neo", "Scorpio N / Scorpio Classic", "Thar / Thar Roxx", "XEV 4e", "XEV 9e", "XUV3XO", "XUV700 / XUV7XO"],
-  "Maruti Suzuki": ["Alto 800 / Alto K10", "Baleno", "Brezza", "Celerio", "Ciaz", "Dzire", "Eeco", "Ertiga", "Fronx", "Grand Vitara", "Ignis", "Invicto", "Jimny", "S-Presso", "Swift", "Victoris", "Wagon R", "XL6"],
-  "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "EQB", "EQS", "GLA", "GLB", "GLC", "GLE", "GLS", "S-Class"],
-  "MG Motor": ["Astor", "Comet EV", "Gloster", "Hector", "Hector Plus", "ZS EV"],
-  Nissan: ["Gravite", "Kicks", "Magnite", "Tekton"],
-  "Range Rover": ["Defender", "Discovery", "Discovery Sport", "Range Rover", "Range Rover Sport", "Range Rover Velar"],
-  Renault: ["Bigster", "Duster", "Kwid", "Triber"],
-  Skoda: ["Kodiaq", "Kushaq", "Octavia / Octavia RS", "Slavia", "Superb"],
-  "Tata Motors": ["Altroz", "Avinya / Avinya X", "Curvv", "Harrier", "Nexon", "Punch", "Safari", "Sierra", "Tiago", "Tiago NRG", "Tigor"],
-  Toyota: ["Camry", "Corolla", "Fortuner", "Glanza", "Hilux", "Innova", "Innova Hycross", "Land Cruiser", "Prado", "Urban Cruiser / Urban Cruiser Hyryder"],
-  Volkswagen: ["Polo", "Taigun", "Tiguan / Tiguan Allspace", "Vento", "Virtus"]
+  Audi: ["A3", "A4", "A6", "Q5"],
+  BMW: ["3 Series", "5 Series", "X1", "X5"],
+  Benz: ["C-Class", "E-Class", "GLA", "GLS"],
+  Honda: ["City", "Amaze"],
+  Hyundai: ["Creta", "i20", "Venue"],
+  Kia: ["Seltos", "Sonet"],
+  Mahindra: ["Thar", "Scorpio"],
+  "Maruti Suzuki": ["Swift", "Baleno"],
+  MG: ["Hector", "ZS EV"],
+  Nissan: ["Magnite"],
+  "Range Rover": ["Velar"],
+  Renault: ["Kwid"],
+  Skoda: ["Slavia"],
+  Tata: ["Nexon", "Harrier"],
+  Toyota: ["Fortuner"],
+  Volkswagen: ["Virtus"],
 };
 
-const VEHICLE_TYPES = ["Sedan", "SUV", "Hatchback", "Coupe", "Van"];
-const COLORS = ["White", "Black", "Red", "Blue", "Grey", "Silver"];
-const FUEL_TYPES = ["Petrol", "Diesel", "CNG", "Electric"];
+const VEHICLE_TYPES = [
+  { label: "Hatchback", image: "/assets/image/brands/c1.png" },
+  { label: "Sedan", image: "/assets/image/brands/c2.png" },
+  { label: "SUV", image: "/assets/image/brands/c3.png" },
+  { label: "Coupe", image: "/assets/image/brands/c4.png" },
+  { label: "Van", image: "/assets/image/brands/c5.png" },
+];
 
-interface Vehicle {
-  _id?: string;
-  vehicleType: string;
-  brand: string;
-  model: string;
-  color: string;
-  fuelType: string;
-  registrationNumber: string;
-}
+const COLORS = [
+  "#ffffff","#000000","#6b7280","#d1d5db",
+  "#dc2626","#2563eb","#059669","#7c3aed","#f59e0b",
+];
 
-// ----------------- COMPONENT -----------------
-export default function VehicleManagementPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [vehicleType, setVehicleType] = useState("");
+const COLOR_MAP = {
+  "#ffffff": "White",
+  "#000000": "Black",
+  "#6b7280": "Grey",
+  "#d1d5db": "Silver",
+  "#dc2626": "Red",
+  "#2563eb": "Blue",
+  "#059669": "Green",
+  "#7c3aed": "Purple",
+  "#f59e0b": "Yellow",
+};
+
+const FUELS = ["Petrol", "Diesel", "CNG", "Electric"];
+
+/* =========================
+   COMPONENT
+========================= */
+
+export default function VehiclePage() {
+  const [step, setStep] = useState(0);
+
+  const [vehicles, setVehicles] = useState<any[]>([]);
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
+  const [vehicleType, setVehicleType] = useState("");
   const [color, setColor] = useState("");
   const [fuelType, setFuelType] = useState("");
-  const [registrationNumber, setRegistrationNumber] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [reg, setReg] = useState("");
 
-  const brands = Object.keys(vehicleData);
-  const modelsByBrand = brand ? vehicleData[brand] ?? [] : [];
+  const userId =
+    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
-  const API_BASE = BASE_URL;
-
-  // ----------------- FETCH VEHICLES -----------------
   const fetchVehicles = async () => {
-    const userId = localStorage.getItem("userId");
     if (!userId) return;
-    try {
-      const res = await axios.get(`${API_BASE}api/vehicles/getvehicle/${userId}`);
-      setVehicles(res.data?.vehicles || []);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await axios.get(`${BASE_URL}api/vehicles/getvehicle/${userId}`);
+    setVehicles(res.data?.vehicles || []);
   };
 
   useEffect(() => {
     fetchVehicles();
   }, []);
 
-  // ----------------- RESET FORM -----------------
-  const resetForm = () => {
-    setVehicleType("");
-    setBrand("");
-    setModel("");
-    setColor("");
-    setFuelType("");
-    setRegistrationNumber("");
-    setEditingId(null);
-  };
-
-  // ----------------- SAVE / UPDATE VEHICLE -----------------
   const handleSave = async () => {
-    if (!vehicleType || !brand || !model || !color || !fuelType || !registrationNumber) {
-      alert("Please fill all fields");
-      return;
+    if (!brand || !model || !vehicleType) {
+      return toast.error("Fill all required fields");
     }
 
-    const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    await axios.post(`${BASE_URL}api/vehicles/createvehicle`, {
+      userId,
+      brand,
+      model,
+      vehicleType,
+      color: COLOR_MAP[color],
+      fuelType,
+      registrationNumber: reg,
+    });
 
-    const payload = { userId, vehicleType, brand, model, color, fuelType, registrationNumber };
-
-    try {
-      setLoading(true);
-      if (editingId) {
-        await axios.put(`${API_BASE}api/vehicles/vehicle/${editingId}`, payload);
-      } else {
-        await axios.post(`${API_BASE}api/vehicles/createvehicle`, payload);
-      }
-      fetchVehicles();
-      resetForm();
-      setModalOpen(false);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    toast.success("Vehicle Added 🚗");
+    setStep(0);
+    fetchVehicles();
   };
 
-  const handleEdit = (v: Vehicle) => {
-    setVehicleType(v.vehicleType);
-    setBrand(v.brand);
-    setModel(v.model);
-    setColor(v.color);
-    setFuelType(v.fuelType);
-    setRegistrationNumber(v.registrationNumber);
-    setEditingId(v._id || null);
-    setModalOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this vehicle?")) return;
-    try {
-      await axios.delete(`${API_BASE}api/vehicles/vehicle/${id}`);
-      fetchVehicles();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  /* ========================= UI ========================= */
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6">
+    <div className="max-w-md mx-auto min-h-screen bg-gray-100">
+
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Car /> Manage Vehicles
-        </h1>
-        <Button onClick={() => { resetForm(); setModalOpen(true); }}>+ Add Vehicle</Button>
+      <div className="p-4 font-semibold flex items-center gap-2 bg-white shadow">
+        <Car size={18} /> Manage Vehicles
       </div>
 
-      {/* VEHICLE LIST */}
-      {vehicles.length === 0 ? (
-        <p className="text-gray-500">No vehicles added yet</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* LIST */}
+      {step === 0 && (
+        <div className="p-4 space-y-3">
           {vehicles.map((v) => (
-            <Card key={v._id} className="p-4">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Car /> {v.brand} {v.model}
-              </h3>
-              <p>Reg: {v.registrationNumber}</p>
-              <p>{v.vehicleType} | {v.fuelType} | {v.color}</p>
-              <div className="flex gap-2 mt-2 flex-wrap">
-                <Button onClick={() => handleEdit(v)} size="sm" variant="outline" className="flex-1 sm:flex-none">
-                  Edit
-                </Button>
-                {/* <Button onClick={() => handleDelete(v._id!)} size="sm" variant="destructive" className="flex-1 sm:flex-none">
-                  <Trash2 /> Delete
-                </Button> */}
-              </div>
-            </Card>
+            <div key={v._id} className="bg-white p-3 rounded-xl shadow">
+              <p className="font-medium">{v.brand} {v.model}</p>
+              <p className="text-xs text-gray-500">{v.registrationNumber}</p>
+            </div>
           ))}
+
+          <button
+            onClick={() => setStep(1)}
+            className="w-full border-dashed border p-3 rounded-xl text-red-500"
+          >
+            + Add Vehicle
+          </button>
         </div>
       )}
 
-      {/* MODAL */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 sm:p-6 overflow-auto">
-          <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Vehicle" : "Add Vehicle"}</h2>
-
-            {/* Vehicle Type */}
-            <Select value={vehicleType} onValueChange={(v) => { setVehicleType(v); setBrand(""); setModel(""); }}>
-              <SelectTrigger><SelectValue placeholder="Select Vehicle Type" /></SelectTrigger>
-              <SelectContent>
-                {VEHICLE_TYPES.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            {/* Brand */}
-            <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(""); }} >
-              <SelectTrigger><SelectValue placeholder="Select Brand" /></SelectTrigger>
-              <SelectContent>
-                {brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            {/* Model */}
-            <Select value={model} onValueChange={setModel}  disabled={!brand}>
-              <SelectTrigger><SelectValue placeholder="Select Model" /></SelectTrigger>
-              <SelectContent>
-                {modelsByBrand.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            {/* Color */}
-            <Select value={color} onValueChange={setColor} >
-              <SelectTrigger><SelectValue placeholder="Select Color" /></SelectTrigger>
-              <SelectContent>
-                {COLORS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            {/* Fuel Type */}
-            <Select value={fuelType} onValueChange={setFuelType} >
-              <SelectTrigger><SelectValue placeholder="Select Fuel Type" /></SelectTrigger>
-              <SelectContent>
-                {FUEL_TYPES.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <Input
-              placeholder="Registration Number"
-              value={registrationNumber}
-              onChange={(e) => setRegistrationNumber(e.target.value.toUpperCase())}
-              className="mt-2"
-            />
-
-            <div className="flex flex-col sm:flex-row gap-3 mt-4">
-              <Button onClick={handleSave} className="flex-1">{editingId ? "Update Vehicle" : "Add Vehicle"}</Button>
-              <Button onClick={() => setModalOpen(false)} variant="outline" className="flex-1">Cancel</Button>
+      {/* STEP 1: BRAND */}
+      {step === 1 && (
+        <div className="p-4 grid grid-cols-3 gap-3">
+          {BRANDS.map((b) => (
+            <div
+              key={b.name}
+              onClick={() => setBrand(b.name)}
+              className={`p-3 bg-white rounded-xl border text-center cursor-pointer
+              ${brand === b.name && "border-red-500"}`}
+            >
+             <Image
+  src={b.image}
+  alt={b.name}
+  width={50}
+  height={50}
+  className="mx-auto"
+/>
+              <p className="text-xs">{b.name}</p>
             </div>
+          ))}
+
+          <button
+            onClick={() => setStep(2)}
+            className="col-span-3 bg-red-500 text-white py-2 rounded mt-4"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* STEP 2: MODEL */}
+      {step === 2 && (
+        <div className="p-4">
+          <p className="text-sm mb-2">Select Model</p>
+
+          <div className="grid grid-cols-2 gap-2">
+            {vehicleData[brand]?.map((m) => (
+              <div
+                key={m}
+                onClick={() => setModel(m)}
+                className={`p-2 bg-white border rounded text-xs text-center cursor-pointer
+                ${model === m && "border-red-500"}`}
+              >
+                {m}
+              </div>
+            ))}
           </div>
+
+          <button
+            onClick={() => setStep(3)}
+            className="w-full bg-red-500 text-white py-2 mt-4 rounded"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* STEP 3: TYPE */}
+      {step === 3 && (
+        <div className="p-4 grid grid-cols-2 gap-3">
+          {VEHICLE_TYPES.map((v) => (
+            <div
+              key={v.label}
+              onClick={() => setVehicleType(v.label)}
+              className={`bg-white p-3 rounded-xl border text-center cursor-pointer
+              ${vehicleType === v.label && "border-red-500"}`}
+            >
+            <Image
+  src={v.image}
+  alt={v.label}
+  width={60}
+  height={60}
+  className="mx-auto"
+/>
+              <p className="text-xs">{v.label}</p>
+            </div>
+          ))}
+
+          <button
+            onClick={() => setStep(4)}
+            className="col-span-2 bg-red-500 text-white py-2 rounded"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* STEP 4: FINAL */}
+      {step === 4 && (
+        <div className="p-4 space-y-3">
+
+          <input
+            placeholder="Registration Number"
+            value={reg}
+            onChange={(e) => setReg(e.target.value)}
+            className="w-full border p-2 rounded"
+          />
+
+          {/* COLORS */}
+          <div className="flex gap-2">
+            {COLORS.map((c) => (
+              <div
+                key={c}
+                onClick={() => setColor(c)}
+                style={{ backgroundColor: c }}
+                className={`w-6 h-6 rounded-full border cursor-pointer
+                ${color === c && "ring-2 ring-black"}`}
+              />
+            ))}
+          </div>
+
+          {/* FUEL */}
+          <div className="flex gap-2">
+            {FUELS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setFuelType(f)}
+                className={`px-3 py-1 text-xs rounded
+                ${fuelType === f ? "bg-red-500 text-white" : "bg-gray-200"}`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={handleSave}
+            className="w-full bg-red-500 text-white py-2 rounded"
+          >
+            Save Vehicle
+          </button>
         </div>
       )}
     </div>

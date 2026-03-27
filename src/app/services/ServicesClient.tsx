@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, Clock, Car, Gift } from "lucide-react";
 
 import { Button } from "@/app/components/ui/button";
-import { Card } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Badge } from "@/app/components/ui/badge";
 import {
@@ -31,7 +29,7 @@ export default function ServicesClient() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  /* ================= FETCH PRODUCTS ================= */
+  /* ================= FETCH ================= */
   useEffect(() => {
     fetch(`${BASE_URL}api/product/allProduct?lang=1`)
       .then((res) => res.json())
@@ -43,7 +41,7 @@ export default function ServicesClient() {
       .catch((err) => console.error("API Error:", err));
   }, []);
 
-  /* ================= APPLY CATEGORY FROM URL ================= */
+  /* ================= CATEGORY FROM URL ================= */
   useEffect(() => {
     if (categoryFromURL) {
       setSelectedCategory(decodeURIComponent(categoryFromURL));
@@ -67,7 +65,6 @@ export default function ServicesClient() {
         _id: product._id,
         name: product.name,
         price: product.offerPrice || product.price,
-        days: product.days || 1,
         quantity: 1,
         item: product,
       },
@@ -88,7 +85,7 @@ export default function ServicesClient() {
     ...new Set(products.flatMap((p) => p.category || [])),
   ];
 
-  /* ================= FILTER LOGIC ================= */
+  /* ================= FILTER ================= */
   const filteredProducts = products.filter((product) => {
     const matchesVehicle =
       selectedVehicleType === "All" ||
@@ -102,30 +99,32 @@ export default function ServicesClient() {
       );
 
     const matchesSearch =
-      product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      product.name?.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesVehicle && matchesCategory && matchesSearch;
   });
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* ================= HEADER ================= */}
-      <div className="bg-gradient-to-r from-red-600 to-red-500 text-white py-10 md:py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-2xl md:text-4xl font-bold">Our Services</h1>
-          <p className="text-sm md:text-lg opacity-90">
+      <div className="bg-gradient-to-r from-red-600 to-red-500 text-white py-8 md:py-14">
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="text-xl md:text-4xl font-bold">
+            Our Services
+          </h1>
+          <p className="text-xs md:text-lg opacity-90 mt-1">
             Choose the perfect service for your vehicle
           </p>
         </div>
       </div>
 
       {/* ================= FILTER BAR ================= */}
-      <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-3 md:py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:gap-4">
+      <div className="bg-white border-b sticky top-0 z-20 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+
             {/* Search */}
             <div className="relative w-full md:flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -138,12 +137,12 @@ export default function ServicesClient() {
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-2 gap-3 md:flex md:gap-4">
+            <div className="grid grid-cols-2 gap-2 md:flex md:gap-3">
               <Select
                 value={selectedVehicleType}
                 onValueChange={setSelectedVehicleType}
               >
-                <SelectTrigger className="w-full md:w-48 text-sm">
+                <SelectTrigger className="w-full md:w-44 text-xs md:text-sm">
                   <SelectValue placeholder="Vehicle Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,7 +158,7 @@ export default function ServicesClient() {
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
               >
-                <SelectTrigger className="w-full md:w-48 text-sm">
+                <SelectTrigger className="w-full md:w-44 text-xs md:text-sm">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,98 +171,162 @@ export default function ServicesClient() {
               </Select>
             </div>
 
-            <Button variant="outline" className="w-full md:w-auto text-sm">
-              <Filter className="w-4 h-4 mr-2" />
+            <Button variant="outline" className="w-full md:w-auto text-xs md:text-sm">
+              <Filter className="w-4 h-4 mr-1" />
               Filters
             </Button>
+
           </div>
         </div>
       </div>
 
       {/* ================= PRODUCTS ================= */}
-      <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 py-5 md:py-8">
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+
           {filteredProducts.map((product, index) => (
             <motion.div
               key={product._id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card className="h-full hover:shadow-xl transition">
-                <Link href={`/product/${product._id}`}>
-                  <div className="relative cursor-pointer">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-32 md:h-48 object-cover"
-                    />
-                    {product.is_hot && (
-                      <Badge className="absolute top-2 left-2 bg-red-600 text-xs">
-                        Hot
-                      </Badge>
-                    )}
-                  </div>
-                </Link>
 
-                <div className="p-3 md:p-4">
-                  <h3 className="font-semibold text-sm md:text-lg">
+              {/* ================= MOBILE CARD ================= */}
+              <div className="block md:hidden bg-white rounded-xl shadow-sm overflow-hidden">
+
+                <div className="relative">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-24 object-contain bg-gray-50"
+                  />
+                  {product.is_hot && (
+                    <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded">
+                      Hot
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-2">
+                  <div className="flex justify-between">
+
+                    <div>
+                      <p className="text-[10px] text-red-500 font-medium">
+                        {product.tag || "Daily Shine"}
+                      </p>
+
+                      <h3 className="text-sm font-semibold">
+                        {product.name}
+                      </h3>
+
+                      <p className="text-[10px] text-green-600">
+                        {product.discount || "10% Off"}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      {product.offeramount && (
+                        <p className="text-[11px] text-gray-400 line-through">
+                          ₹{product.offeramount}
+                        </p>
+                      )}
+                      <p className="text-red-600 font-semibold text-sm">
+                        ₹{product.offerPrice || product.price}
+                      </p>
+                    </div>
+
+                  </div>
+
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-2 border-t pt-2">
+                    <span className="flex items-center gap-1">
+                      <Clock size={12} /> {product.days + product.interior || 26} Days
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Car size={12} /> {product.interior || 2} {" "}Interior 
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Gift size={12} /> Foam
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => addToCart(product)}
+                    className="mt-2 w-full bg-red-600 text-white text-xs py-1.5 rounded-md"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              </div>
+
+              {/* ================= DESKTOP CARD ================= */}
+              <div className="hidden md:flex flex-col bg-white rounded-xl shadow-sm hover:shadow-xl transition overflow-hidden h-full">
+
+                <div className="relative">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  {product.is_hot && (
+                    <Badge className="absolute top-3 left-3 bg-red-600">
+                      Hot
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="p-4 flex flex-col flex-1">
+
+                  <h3 className="text-lg font-semibold mb-1">
                     {product.name}
                   </h3>
 
-                  <div className="text-gray-600 text-xs md:text-sm mb-3 line-clamp-2">
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: product.description,
-                      }}
-                    />
+                  <p className="text-sm text-gray-500 mb-3">
+                    {product.tag || "Premium Plan"}
+                  </p>
+
+                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} /> {product.days + product.interior || 26} Days Service
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Car size={14} /> {product.interior || 2} Interior
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Gift size={14} /> Foam Wash
+                    </div>
                   </div>
 
-                  <div className="flex justify-between items-center">
+                  <div className="mt-auto flex items-center justify-between">
+
                     <div>
-                      <span className="text-red-600 font-bold">
-                        ₹{product.offerPrice || product.price}
-                      </span>
                       {product.offeramount && (
-                        <span className="text-xs line-through ml-2 text-gray-400">
+                        <p className="text-sm text-gray-400 line-through">
                           ₹{product.offeramount}
-                        </span>
+                        </p>
                       )}
+                      <p className="text-red-600 text-xl font-bold">
+                        ₹{product.offerPrice || product.price}
+                      </p>
                     </div>
 
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToCart(product);
-                      }}
+                    <button
+                      onClick={() => addToCart(product)}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700"
                     >
-                      Book
-                    </Button>
+                      Book Now
+                    </button>
+
                   </div>
+
                 </div>
-              </Card>
+              </div>
+
             </motion.div>
           ))}
-        </div>
 
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-10">
-            <p className="text-gray-500">No services found</p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => {
-                setSelectedVehicleType("All");
-                setSelectedCategory("All");
-                setSearchQuery("");
-                router.push("/services");
-              }}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
