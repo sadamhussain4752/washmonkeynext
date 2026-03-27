@@ -12,14 +12,18 @@ const PlansSection = () => {
   const router = useRouter();
   const [plans, setPlans] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
-const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${BASE_URL}api/product/allProduct?lang=1`)
       .then((res) => res.json())
       .then((data) => {
         if (data?.success) {
-          setPlans(data.products || []);
+          const sortedPlans = (data.products || []).sort(
+            (a, b) => a.price - b.price
+          );
+
+          setPlans(sortedPlans);
         }
       })
       .catch((err) => console.error("API Error:", err));
@@ -39,52 +43,52 @@ const [open, setOpen] = useState(false);
     localStorage.setItem("cart", JSON.stringify(newCart));
     router.push("/mycard");
   };
-const parseDescription = (html: string) => {
-  if (typeof window === "undefined") return [];
+  const parseDescription = (html: string) => {
+    if (typeof window === "undefined") return [];
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
 
-  const sections: any[] = [];
-  let currentSection: any = null;
+    const sections: any[] = [];
+    let currentSection: any = null;
 
-  doc.body.childNodes.forEach((node: any) => {
+    doc.body.childNodes.forEach((node: any) => {
 
-    // Section Title
-    if (node.tagName === "P") {
-      const strong = node.querySelector("strong");
-      if (strong) {
-        currentSection = {
-          title: strong.innerText,
-          items: [],
-        };
-        sections.push(currentSection);
+      // Section Title
+      if (node.tagName === "P") {
+        const strong = node.querySelector("strong");
+        if (strong) {
+          currentSection = {
+            title: strong.innerText,
+            items: [],
+          };
+          sections.push(currentSection);
+        }
       }
-    }
 
-    // List Items
-    if (node.tagName === "OL" && currentSection) {
-      const items = Array.from(node.querySelectorAll("li")).map(
-        (li: any) => li.innerText
-      );
-      currentSection.items = items;
-    }
+      // List Items
+      if (node.tagName === "OL" && currentSection) {
+        const items = Array.from(node.querySelectorAll("li")).map(
+          (li: any) => li.innerText
+        );
+        currentSection.items = items;
+      }
 
-  });
+    });
 
-  return sections;
-};
+    return sections;
+  };
 
-const getIcon = (title: string) => {
-  const t = title.toLowerCase();
+  const getIcon = (title: string) => {
+    const t = title.toLowerCase();
 
-  if (t.includes("exterior")) return Clock;
-  if (t.includes("interior")) return Car;
-  if (t.includes("wash")) return Gift;
+    if (t.includes("exterior")) return Clock;
+    if (t.includes("interior")) return Car;
+    if (t.includes("wash")) return Gift;
 
-  return Clock;
-};
-  
+    return Clock;
+  };
+
 
   if (!plans.length) return null;
 
@@ -113,12 +117,12 @@ const getIcon = (title: string) => {
             >
 
               {/* ================= MOBILE CARD ================= */}
-              <div className="block md:hidden bg-white rounded-xl shadow-sm overflow-hidden" 
-              onClick={() => {
-  setSelectedPlan(plan);
-  setOpen(true);
-}}
-              
+              <div className="block md:hidden bg-white rounded-xl shadow-sm overflow-hidden"
+                onClick={() => {
+                  setSelectedPlan(plan);
+                  setOpen(true);
+                }}
+
               >
 
                 {/* Image */}
@@ -142,48 +146,48 @@ const getIcon = (title: string) => {
 
 
                         <p className="text-[10px] text-red-500 font-medium">
-                          {plan.tag || "Daily Shine"}
+                          {plan.category[0]}
                         </p>
 
                         <p className="text-[10px] text-green-600">
                           {plan.discount || "10% Off"}
                         </p>
-                         {/* Name */}
-                      <h3 className="text-sm font-semibold leading-tight">
-                        {plan.name}
-                      </h3>
+                        {/* Name */}
+                        <p className="text-[12px] font-semibold leading-tight">
+                          {plan.name}
+                        </p>
 
                       </div>
 
-                     
+
 
                       <div className="flex items-center gap-1">
-                      {plan.offeramount && (
-                        <span className="text-[11px] text-gray-400 line-through">
-                          ₹{plan.offeramount}
+                        {plan.offeramount && (
+                          <span className="text-[11px] text-gray-400 line-through">
+                            ₹{plan.offeramount}
+                          </span>
+                        )}
+                        <span className="text-red-600 font-semibold text-sm">
+                          ₹{plan.price}
                         </span>
-                      )}
-                      <span className="text-red-600 font-semibold text-sm">
-                        ₹{plan.price}
-                      </span>
-                    </div>
+                      </div>
                     </div>
 
 
 
                     {/* Price */}
-                    
+
 
                   </div>
                   {/* Bottom Info */}
                   <div className="flex items-center justify-between text-[10px] text-gray-500 mt-2 border-t pt-2">
                     <div className="flex items-center gap-1">
                       <Clock size={12} />
-                      {plan.days + plan.interior } Days
+                      {plan.days + plan.interior} Days
                     </div>
                     <div className="flex items-center gap-1">
-                      <Car size={12} /> {plan.interior || 2} {" "}Interior 
-                      
+                      <Car size={12} /> {plan.interior} {" "}Interior
+
                     </div>
                     <div className="flex items-center gap-1">
                       <Gift size={12} />
@@ -253,81 +257,81 @@ const getIcon = (title: string) => {
         </div>
       </div>
       {open && selectedPlan && (
-  <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40">
 
-    {/* Container */}
-    <div className="w-full md:max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-lg overflow-hidden animate-slideUp">
+          {/* Container */}
+          <div className="w-full md:max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-lg overflow-hidden animate-slideUp">
 
-      {/* Close */}
-      <div className="flex justify-end p-3">
-        <button onClick={() => setOpen(false)} className="text-gray-500 text-lg">
-          ✕
-        </button>
-      </div>
+            {/* Close */}
+            <div className="flex justify-end p-3">
+              <button onClick={() => setOpen(false)} className="text-gray-500 text-lg">
+                ✕
+              </button>
+            </div>
 
-      {/* Image */}
-      <div className="flex justify-center px-4">
-        <img
-          src={selectedPlan.image}
-          className="h-28 object-contain"
-        />
-      </div>
+            {/* Image */}
+            <div className="flex justify-center px-4">
+              <img
+                src={selectedPlan.image}
+                className="h-28 object-contain"
+              />
+            </div>
 
-      {/* Title */}
-      <div className="text-center px-4 mt-2">
-        <h3 className="text-sm font-semibold text-red-600">
-          {selectedPlan.tag || "Daily Shine Plan"}
-        </h3>
-        <p className="text-xs text-gray-600">
-          {selectedPlan.name}
-        </p>
-      </div>
+            {/* Title */}
+            <div className="text-center px-4 mt-2">
+              <h3 className="text-sm font-semibold text-red-600">
+                {selectedPlan.tag || "Daily Shine Plan"}
+              </h3>
+              <p className="text-xs text-gray-600">
+                {selectedPlan.name}
+              </p>
+            </div>
 
-      {/* Scroll Content */}
-      <div className="max-h-[50vh] overflow-y-auto px-3 py-3 space-y-3">
+            {/* Scroll Content */}
+            <div className="max-h-[50vh] overflow-y-auto px-3 py-3 space-y-3">
 
-      {parseDescription(selectedPlan.description)?.map((section: any, index: number) => {
-  const Icon = getIcon(section.title);
+              {parseDescription(selectedPlan.description)?.map((section: any, index: number) => {
+                const Icon = getIcon(section.title);
 
-  return (
-    <div key={index} className="border rounded-lg p-3 text-xs">
+                return (
+                  <div key={index} className="border rounded-lg p-3 text-xs">
 
-      {/* Title */}
-      <div className="flex items-center gap-2 font-semibold mb-2">
-        <Icon size={14} />
-        {section.title}
-      </div>
+                    {/* Title */}
+                    <div className="flex items-center gap-2 font-semibold mb-2">
+                      <Icon size={14} />
+                      {section.title}
+                    </div>
 
-      {/* Items */}
-      <ul className="space-y-1 text-gray-600">
-        {section.items.map((item: string, i: number) => (
-          <li key={i}>
-            {i + 1}. {item}
-          </li>
-        ))}
-      </ul>
+                    {/* Items */}
+                    <ul className="space-y-1 text-gray-600">
+                      {section.items.map((item: string, i: number) => (
+                        <li key={i}>
+                          {i + 1}. {item}
+                        </li>
+                      ))}
+                    </ul>
 
-    </div>
-  );
-})}
-      </div>
+                  </div>
+                );
+              })}
+            </div>
 
-      {/* Button */}
-      <div className="p-3 border-t mb-10">
-        <button
-          onClick={() => {
-            addToCart(selectedPlan);
-            setOpen(false);
-          }}
-          className="w-full bg-red-600 text-white py-2 rounded-lg text-sm mb-10"
-        >
-          Book Now
-        </button>
-      </div>
+            {/* Button */}
+            <div className="p-3 border-t mb-10">
+              <button
+                onClick={() => {
+                  addToCart(selectedPlan);
+                  setOpen(false);
+                }}
+                className="w-full bg-red-600 text-white py-2 rounded-lg text-sm mb-10"
+              >
+                Book Now
+              </button>
+            </div>
 
-    </div>
-  </div>
-)}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

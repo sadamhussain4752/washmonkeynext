@@ -240,27 +240,31 @@ export default function ProfilePage() {
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-gray-100">
+   <>
+  <div className="min-h-screen bg-gray-100">
+
+    {/* ================= DESKTOP UI ================= */}
+    <div className="hidden md:block">
+
       {/* HEADER */}
       <div className="bg-gradient-to-br from-red-600 to-red-500">
-        <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col sm:flex-row items-center gap-5 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-12 flex items-center gap-6 text-white">
           <img
             src={user?.profile_img || "/avatar.png"}
-            alt="Profile"
-            className="w-20 h-20 rounded-full border-4 border-white object-cover"
+            className="w-24 h-24 rounded-full border-4 border-white object-cover"
           />
-          <div className="text-center sm:text-left">
+          <div>
             <h1 className="text-2xl font-semibold">
               {user?.firstname} {user?.lastname}
             </h1>
-            <p className="opacity-90 text-sm">{user?.email}</p>
-            <p className="opacity-90 text-sm">{user?.mobilenumber}</p>
+            <p className="text-sm opacity-90">{user?.email}</p>
+            <p className="text-sm opacity-90">{user?.mobilenumber}</p>
           </div>
         </div>
       </div>
 
-      {/* NAV GRID */}
-      <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* GRID */}
+      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
         {navItems.map((item, index) => (
           <NavCard
             key={index}
@@ -270,11 +274,58 @@ export default function ProfilePage() {
           />
         ))}
       </div>
-      {/* SOCIAL MEDIA */}
-<div className="max-w-7xl mx-auto px-4 pb-10 mb-10">
-  <RenderSocialMediaCards />
-</div>
+
+      {/* SOCIAL */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        <RenderSocialMediaCards />
+      </div>
+    </div>
+
+    {/* ================= MOBILE UI ================= */}
+    <div className="block md:hidden max-w-md mx-auto p-4 space-y-4 pb-24">
+
+      {/* PROFILE CARD */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm text-center relative">
+        <img
+          src={user?.profile_img || "/avatar.png"}
+          className="w-20 h-20 rounded-full mx-auto mb-3 object-cover"
+        />
+        <h2 className="font-semibold text-lg text-gray-800">
+          {user?.firstname} {user?.lastname}
+        </h2>
+        <p className="text-sm text-gray-500">{user?.email}</p>
+
+        <button className="absolute right-4 top-4 text-red-600 text-xs font-medium">
+          Edit
+        </button>
+      </div>
+
+      {/* SETTINGS LIST */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        {navItems.map((item, i) => (
+          <div
+            key={i}
+            onClick={() => handleNavClick(item)}
+            className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer transition"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-gray-600">{item.icon}</span>
+              <span className="text-sm font-medium text-gray-800">
+                {item.label}
+              </span>
+            </div>
+
+            <span className="text-gray-400 text-sm">›</span>
+          </div>
+        ))}
+      </div>
+
+      {/* SOCIAL */}
+      <RenderSocialMediaCards />
 
     </div>
+  </div>
+</>
+    
   );
 }

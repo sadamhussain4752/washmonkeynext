@@ -2,15 +2,11 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useRouter, usePathname } from "next/navigation";
-import { Input } from "@/app/components/ui/input";
-import { Textarea } from "@/app/components/ui/textarea";
-import { Button } from "@/app/components/ui/button";
-import { Card } from "@/app/components/ui/card";
-// import { components } from "@/app/components";
-// import { theme } from "@/app/constants";
+import { useRouter, usePathname,useParams } from "next/navigation";
 
 import { BASE_URL } from "@/app/utils/config";
+
+/* ================= TYPES ================= */
 
 interface Message {
   sender: "user" | "admin";
@@ -27,10 +23,13 @@ interface TicketDetail {
   messages: Message[];
 }
 
+/* ================= PAGE ================= */
+
 export default function SupportTicketDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const ticketId = pathname.split("/").pop(); // get ID from URL
+const params = useParams();
+const ticketId = params?.ticketId as string;
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [ticketDetail, setTicketDetail] = useState<TicketDetail | null>(null);
@@ -38,58 +37,81 @@ export default function SupportTicketDetailPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
-  /* ---------------- FETCH TICKET ---------------- */
-  const fetchTicket = async () => {
-    if (!ticketId) return;
-    try {
-      setFetching(true);
-      const res = await axios.get(`${BASE_URL}api/support/ticket/${ticketId}`);
-      setTicketDetail(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setFetching(false);
-    }
-  };
+  /* ================= FETCH ================= */
 
-  /* ---------------- AUTO REFRESH ---------------- */
+ const fetchTicket = async () => {
+  if (!ticketId) {
+    console.log("❌ No ticketId found");
+    return;
+  }
+
+
+  try {
+    setFetching(true);
+    const res = await axios.get(
+      `${BASE_URL}api/support/ticket/${ticketId}`
+    );
+
+    setTicketDetail(res.data);
+  } catch (err) {
+    console.error("❌ Fetch error:", err);
+  } finally {
+    setFetching(false);
+  }
+};
+  /* ================= AUTO REFRESH ================= */
+
   useEffect(() => {
     fetchTicket();
-    const interval = setInterval(fetchTicket, 10000); // every 10s
+
+    const interval = setInterval(fetchTicket, 10000); // every 10 sec
     return () => clearInterval(interval);
   }, [ticketId]);
 
-  /* ---------------- AUTO SCROLL ---------------- */
+  /* ================= AUTO SCROLL ================= */
+
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
   }, [ticketDetail]);
 
-  /* ---------------- SEND REPLY ---------------- */
+  /* ================= SEND MESSAGE ================= */
+
   const handleReply = async () => {
     if (!message.trim() || loading || !ticketId) return;
 
     try {
       setLoading(true);
+
       await axios.post(`${BASE_URL}api/support/reply/${ticketId}`, {
         sender: "user",
         content: message.trim(),
       });
+
       setMessage("");
       fetchTicket();
     } catch (err) {
-      alert("Could not send reply");
+      alert("Failed to send message");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ================= LOADING ================= */
+
   if (fetching && !ticketDetail) {
     return (
-      <div className="flex justify-center items-center h-screen">
-       <p>Loading ..</p>
+      <div className="h-screen flex items-center justify-center">
+        <p>Loading...</p>
       </div>
     );
   }
+
+  /* ================= MERGE MESSAGES ================= */
 
   const allMessages = ticketDetail
     ? [
@@ -99,57 +121,102 @@ export default function SupportTicketDetailPage() {
           sentAt: ticketDetail.submittedAt,
         },
         ...(ticketDetail.messages || []),
-      ].sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime())
+      ].sort(
+        (a, b) =>
+          new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
+      )
     : [];
 
+  /* ================= UI ================= */
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen flex flex-col bg-gray-100">
       {/* HEADER */}
-      <div className="bg-gradient-to-r from-red-600 to-red-500 text-white py-6 px-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Ticket Detail</h1>
-        <Button variant="ghost" onClick={() => router.back()} className="text-white">
-          Close
-        </Button>
+      <div className="bg-white border-b px-4 py-3 flex items-center gap-3 shadow-sm">
+        <button
+          onClick={() => router.back()}
+          className="text-lg font-bold"
+        >
+          ←
+        </button>
+
+        <div>
+          <h1 className="font-semibold text-gray-800 text-sm">
+            {ticketDetail?.issue}
+          </h1>
+          {ticketDetail?.subIssue && (
+            <p className="text-xs text-gray-500">
+              {ticketDetail.subIssue}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6" ref={scrollRef}>
-        <Card className="p-6 mb-6">
-          <h2 className="text-xl font-bold text-blue-600">{ticketDetail?.issue}</h2>
-          {ticketDetail?.subIssue && <p className="text-gray-500 mb-4">{ticketDetail.subIssue}</p>}
+      {/* CHAT */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 py-4 space-y-3"
+      >
+        {allMessages.map((msg, index) => {
+          const isUser = msg.sender === "user";
 
-          {allMessages.map((msg, index) => (
+          return (
             <div
               key={index}
-              className={`p-4 mb-4 rounded-lg max-w-[80%] ${
-                msg.sender === "user" ? "bg-blue-50 ml-auto" : "bg-gray-100"
+              className={`flex ${
+                isUser ? "justify-end" : "justify-start"
               }`}
             >
-              <div className="text-xs font-semibold mb-1 text-gray-600">
-                {msg.sender === "user" ? "You" : "Support"}
-              </div>
-              <div className="text-sm text-gray-800">{msg.content}</div>
-              <div className="text-xs text-gray-400 mt-1">
-                {new Date(msg.sentAt).toLocaleString()}
+              <div
+                className={`max-w-[75%] px-4 py-3 rounded-2xl shadow-sm text-sm ${
+                  isUser
+                    ? "bg-red-600 text-white rounded-br-none"
+                    : "bg-white text-gray-800 rounded-bl-none"
+                }`}
+              >
+                {/* MESSAGE */}
+                <p>{msg.content}</p>
+
+                {/* TIME */}
+                <div
+                  className={`text-[10px] mt-1 ${
+                    isUser
+                      ? "text-red-100 text-right"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {new Date(msg.sentAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
-          ))}
-        </Card>
-
-        {/* REPLY FORM */}
-        <Card className="p-6 sticky bottom-4 bg-white">
-          <h3 className="text-lg font-semibold mb-2">Your Reply</h3>
-          <Textarea
-            placeholder="Type your message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={4}
-            className="mb-3"
-          />
-          <Button onClick={handleReply} disabled={!message.trim() || loading} className="w-full">
-            {loading ? "Sending..." : "Send Reply"}
-          </Button>
-        </Card>
+          );
+        })}
       </div>
+
+      {/* INPUT */}
+      <div className="fixed bottom-20 left-0 w-full bg-white border-t px-3 py-2 flex items-center gap-2 z-50">
+  <input
+    type="text"
+    placeholder="Type your message..."
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") handleReply();
+    }}
+    className="flex-1 px-4 py-2 border rounded-full text-sm focus:outline-none"
+  />
+
+  <button
+    onClick={handleReply}
+    disabled={!message.trim() || loading}
+    className="bg-red-600 text-white px-4 py-2 rounded-full text-sm disabled:opacity-50"
+  >
+    {loading ? "..." : "Send"}
+  </button>
+</div>
     </div>
   );
 }

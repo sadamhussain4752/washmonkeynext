@@ -112,23 +112,23 @@ export default function OrderPage() {
   };
 
   /* ================= CHECKOUT ================= */
-  const checkout = () => {
-    if (!cart.length) return;
+const checkout = () => {
+  if (!cart.length) return;
 
-    localStorage.setItem(
-      "checkoutData",
-      JSON.stringify({
-        cart,
-        subtotal,
-        discount,
-        walletUsed,
-        gst,
-        total,
-      })
-    );
+  localStorage.setItem(
+    "checkoutData",
+    JSON.stringify({
+      cart,
+      subtotal,
+      discount,
+      walletUsed,
+      gst,
+      total: Number(total.toFixed(2)), // ✅ correct
+    })
+  );
 
-    router.push("/checkout");
-  };
+  router.push("/checkout");
+};
 
   const item = cart[0];
 
@@ -155,7 +155,7 @@ export default function OrderPage() {
                 className="h-36 object-contain"
               />
 
-              <h3 className="mt-3 text-sm font-semibold text-red-600">
+              <h3 className="mt-3 text-sm font-semibold text-primary">
                 {item?.name}
               </h3>
 
@@ -163,7 +163,7 @@ export default function OrderPage() {
                 {item?.item?.category?.[0]}
               </p>
 
-              <div className="mt-2 border border-red-500 px-4 py-1 rounded-full text-red-600 font-semibold text-sm">
+              <div className="mt-2 border border-red-500 px-4 py-1 rounded-full text-primary font-semibold text-sm">
                 ₹{item?.price} / Month
               </div>
             </div>
@@ -191,8 +191,8 @@ export default function OrderPage() {
                   onClick={discount ? removeCoupon : applyCoupon}
                   className={`px-4 text-sm font-medium ${
                     discount
-                      ? "text-red-600"
-                      : "bg-red-600 text-white"
+                      ? "text-primary"
+                      : "bg-primary text-white"
                   }`}
                 >
                   {loading ? "..." : discount ? "Remove" : "Apply"}
@@ -223,8 +223,8 @@ export default function OrderPage() {
                   onClick={walletUsed ? removeWallet : applyWallet}
                   className={`px-4 text-sm font-medium ${
                     walletUsed
-                      ? "text-red-600"
-                      : "bg-red-600 text-white"
+                      ? "text-primary"
+                      : "bg-primary text-white"
                   }`}
                 >
                   {walletUsed ? "Remove" : "Use"}
@@ -285,7 +285,7 @@ export default function OrderPage() {
             {/* DESKTOP BUTTON */}
             <button
               onClick={checkout}
-              className="hidden md:block w-full mt-5 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-semibold"
+              className="hidden md:block w-full mt-5 bg-primary hover:bg-primary text-white py-3 rounded-xl text-sm font-semibold"
             >
               Checkout
             </button>
@@ -295,10 +295,10 @@ export default function OrderPage() {
       </div>
 
       {/* MOBILE BUTTON */}
-      <div className="fixed bottom-15 left-0 right-0 bg-white border-t p-4 md:hidden">
+      <div className="fixed bottom-17 left-0 right-0 bg-white border-t p-4 md:hidden">
         <button
           onClick={checkout}
-          className="w-full bg-red-600 text-white py-3 rounded-xl text-sm font-semibold"
+          className="w-full bg-primary text-white py-3 rounded-xl text-sm font-semibold"
         >
           Checkout
         </button>

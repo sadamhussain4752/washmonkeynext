@@ -149,7 +149,7 @@ export default function HelpAndSupportPage() {
 
             <div className="container mx-auto px-4 py-8 grid lg:grid-cols-3 gap-8">
                 {/* Contact Methods + Form */}
-                <div className="lg:col-span-1 space-y-6">
+                <div className="lg:col-span-1 space-y-6 hidden md:block">
                     <h2 className="text-xl font-semibold">Contact Us</h2>
                     <div className="space-y-4">
                         {contactMethods.map((method, index) => (
@@ -207,103 +207,77 @@ export default function HelpAndSupportPage() {
                 {/* Tickets + FAQs */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Tickets List */}
-                    <div>
-                        <h2 className="text-2xl font-bold mb-6 text-blue-700">Your Tickets</h2>
+                  <div>
+  <h2 className="text-lg font-semibold mb-4">Your Tickets</h2>
 
-                        {loadingTickets ? (
-                            <div className="flex justify-center py-12">
-                                {/* Spinner can be added here */}
-                                <p className="text-gray-500 text-lg">Loading...</p>
-                            </div>
-                        ) : tickets.length === 0 ? (
-                            <p className="text-center text-gray-500 mt-8 text-lg">
-                                No tickets submitted yet.
-                            </p>
-                        ) : (
-                            <div className="grid md:grid-cols-2 gap-6">
-                                {tickets.map((ticket: any) => {
-                                    const lastMessage =
-                                        ticket.messages?.[ticket.messages.length - 1]?.content || "";
-                                    const hasAdminResponded = ticket.messages?.some(
-                                        (m: any) => m.sender === "admin"
-                                    );
+  {loadingTickets ? (
+    <p className="text-center text-gray-500 py-6">Loading...</p>
+  ) : tickets.length === 0 ? (
+    <p className="text-center text-gray-500 py-6">
+      No tickets submitted yet.
+    </p>
+  ) : (
+    <div className="space-y-3">
+      {tickets.map((ticket: any) => {
+        const status = ticket.status || "pending";
 
-                                    return (
-                                        <Card
-                                            key={ticket._id}
-                                            className="p-6 hover:shadow-lg cursor-pointer transition-shadow rounded-xl border border-gray-200 bg-white"
-                                            onClick={() => router.push(`/support/${ticket._id}`)}
-                                        >
-                                            {/* Header */}
-                                            <div className="flex justify-between items-center mb-3">
-                                                <h3 className="text-lg font-semibold text-blue-600">
-                                                    {ticket.issue}
-                                                </h3>
-                                                <span className="text-sm text-gray-400">{ticket.ticketNumber}</span>
-                                            </div>
+        const statusStyle = {
+          solved: "text-green-600",
+          inprogress: "text-orange-500",
+          cancelled: "text-red-500",
+          onhold: "text-blue-600",
+          pending: "text-gray-500",
+        };
 
-                                            {/* Sub Issue */}
-                                            {ticket.subIssue && (
-                                                <p className="text-gray-700 mb-2">
-                                                    <span className="font-semibold">Sub-Issue:</span> {ticket.subIssue}
-                                                </p>
-                                            )}
+        const statusLabel = {
+          solved: "Solved",
+          inprogress: "Inprogress",
+          cancelled: "Cancelled",
+          onhold: "On Hold",
+          pending: "Pending",
+        };
 
-                                            {/* Vehicle & Service Details */}
-                                            <div className="text-gray-700 mb-3 space-y-1 text-sm">
-                                                {ticket.details["Vehicle Type"] && (
-                                                    <p>
-                                                        <span className="font-semibold">Vehicle Type:</span>{" "}
-                                                        {ticket.details["Vehicle Type"]}
-                                                    </p>
-                                                )}
-                                                {ticket.details["Date of Service"] && (
-                                                    <p>
-                                                        <span className="font-semibold">Service Date:</span>{" "}
-                                                        {ticket.details["Date of Service"]}
-                                                    </p>
-                                                )}
-                                                {ticket.details["Time Slot"] && (
-                                                    <p>
-                                                        <span className="font-semibold">Time Slot:</span>{" "}
-                                                        {ticket.details["Time Slot"]}
-                                                    </p>
-                                                )}
-                                                {ticket.details.Comments && (
-                                                    <p>
-                                                        <span className="font-semibold">Comments:</span>{" "}
-                                                        {ticket.details.Comments}
-                                                    </p>
-                                                )}
-                                            </div>
+        const date = new Date(ticket.submittedAt);
 
-                                            {/* Last Message */}
-                                            {lastMessage && (
-                                                <p className="text-gray-600 text-sm mb-2">
-                                                    <span className="font-semibold">Last Message:</span> {lastMessage}
-                                                </p>
-                                            )}
+        return (
+          <div
+            key={ticket._id}
+            onClick={() => router.push(`/support/${ticket._id}`)}
+            className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md cursor-pointer transition"
+          >
+            {/* Top Row */}
+            <div className="flex justify-between items-center">
+              <p className="font-semibold text-gray-800 text-sm">
+                {ticket.issue}
+              </p>
 
-                                            {/* Timestamp */}
-                                            <p className="text-gray-400 text-xs mb-2">
-                                                Submitted: {new Date(ticket.submittedAt).toLocaleString()}
-                                            </p>
+              <span
+                className={`text-xs font-medium ${
+                  statusStyle[status.toLowerCase()] || "text-gray-500"
+                }`}
+              >
+                {statusLabel[status.toLowerCase()] || "Pending"}
+              </span>
+            </div>
 
-                                            {/* Status Badge */}
-                                            <span
-                                                className={`inline-block mt-2 px-3 py-1 text-xs font-medium rounded-full ${hasAdminResponded
-                                                        ? "bg-green-100 text-green-800"
-                                                        : "bg-yellow-100 text-yellow-800"
-                                                    }`}
-                                            >
-                                                {hasAdminResponded ? "Admin Responded" : "Pending Response"}
-                                            </span>
-                                        </Card>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
+            {/* Date + Time */}
+            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+              <span>
+                📅 {date.toLocaleDateString()}
+              </span>
+              <span>
+                ⏱ {date.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
 
                     {/* FAQs */}
                     <div>

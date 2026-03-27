@@ -29,6 +29,10 @@ export default function ServicesClient() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
+   const [plans, setPlans] = useState<any[]>([]);
+    const [selectedPlan, setSelectedPlan] = useState<any>(null);
+    const [open, setOpen] = useState(false);
+
   /* ================= FETCH ================= */
   useEffect(() => {
     fetch(`${BASE_URL}api/product/allProduct?lang=1`)
@@ -103,6 +107,42 @@ export default function ServicesClient() {
 
     return matchesVehicle && matchesCategory && matchesSearch;
   });
+
+  const parseDescription = (html: string) => {
+  if (!html) return [];
+
+  const div = document.createElement("div");
+  div.innerHTML = html;
+
+  const sections: any[] = [];
+
+  div.querySelectorAll("p").forEach((p) => {
+    const title = p.innerText.trim();
+
+    const next = p.nextElementSibling;
+    if (next && next.tagName === "OL") {
+      const items = Array.from(next.querySelectorAll("li")).map(
+        (li) => li.textContent
+      );
+
+      sections.push({ title, items });
+    }
+  });
+
+  return sections;
+};
+
+const getIcon = (title: string) => {
+  if (!title) return Gift;
+
+  const t = title.toLowerCase();
+
+  if (t.includes("interior")) return Car;
+  if (t.includes("exterior")) return Car;
+  if (t.includes("wash")) return Gift;
+
+  return Clock;
+};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -194,7 +234,12 @@ export default function ServicesClient() {
             >
 
               {/* ================= MOBILE CARD ================= */}
-              <div className="block md:hidden bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="block md:hidden bg-white rounded-xl shadow-sm overflow-hidden"
+               onClick={() => {
+      setSelectedPlan(product);
+      setOpen(true);
+    }}
+              >
 
                 <div className="relative">
                   <img
@@ -241,10 +286,10 @@ export default function ServicesClient() {
 
                   <div className="flex justify-between text-[10px] text-gray-500 mt-2 border-t pt-2">
                     <span className="flex items-center gap-1">
-                      <Clock size={12} /> {product.days + product.interior || 26} Days
+                      <Clock size={12} /> {product.days + product.interior } Days
                     </span>
                     <span className="flex items-center gap-1">
-                      <Car size={12} /> {product.interior || 2} {" "}Interior 
+                      <Car size={12} /> {product.interior } {" "}Interior 
                     </span>
                     <span className="flex items-center gap-1">
                       <Gift size={12} /> Foam
@@ -288,10 +333,10 @@ export default function ServicesClient() {
 
                   <div className="space-y-2 text-sm text-gray-600 mb-4">
                     <div className="flex items-center gap-2">
-                      <Clock size={14} /> {product.days + product.interior || 26} Days Service
+                      <Clock size={14} /> {product.days + product.interior} Days Service
                     </div>
                     <div className="flex items-center gap-2">
-                      <Car size={14} /> {product.interior || 2} Interior
+                      <Car size={14} /> {product.interior} Interior
                     </div>
                     <div className="flex items-center gap-2">
                       <Gift size={14} /> Foam Wash
@@ -311,12 +356,24 @@ export default function ServicesClient() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700"
-                    >
-                      Book Now
-                    </button>
+                   <div className="flex gap-2">
+  <button
+    onClick={() => addToCart(product)}
+    className="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700"
+  >
+    Book Now
+  </button>
+
+  <button
+    onClick={() => {
+      setSelectedPlan(product);
+      setOpen(true);
+    }}
+    className="border border-red-600 text-red-600 px-4 py-2 rounded-md text-sm hover:bg-red-50"
+  >
+    View More
+  </button>
+</div>
 
                   </div>
 
@@ -328,6 +385,83 @@ export default function ServicesClient() {
 
         </div>
       </div>
+     {open && selectedPlan && (
+  <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40">
+
+    <div className="w-full md:max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-lg overflow-hidden animate-[slideUp_0.3s_ease]">
+
+      {/* Close */}
+      <div className="flex justify-end p-3">
+        <button
+          onClick={() => setOpen(false)}
+          className="text-gray-500 text-lg"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Image */}
+      <div className="flex justify-center px-4">
+        <img
+          src={selectedPlan.image}
+          className="h-28 object-contain"
+        />
+      </div>
+
+      {/* Title */}
+      <div className="text-center px-4 mt-2">
+        <h3 className="text-sm font-semibold text-red-600">
+          {selectedPlan.tag || "Daily Shine Plan"}
+        </h3>
+        <p className="text-xs text-gray-600">
+          {selectedPlan.name}
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="max-h-[55vh] overflow-y-auto px-3 py-3 space-y-3">
+
+        {parseDescription(selectedPlan.description).map((section, index) => {
+          const Icon = getIcon(section.title);
+
+          return (
+            <div key={index} className="border rounded-lg p-3 text-xs">
+
+              <div className="flex items-center gap-2 font-semibold mb-2">
+                <Icon size={14} />
+                {section.title}
+              </div>
+
+              <ul className="space-y-1 text-gray-600">
+                {section.items.map((item: string, i: number) => (
+                  <li key={i}>
+                    • {item}
+                  </li>
+                ))}
+              </ul>
+
+            </div>
+          );
+        })}
+
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 border-t">
+        <button
+          onClick={() => {
+            addToCart(selectedPlan);
+            setOpen(false);
+          }}
+          className="w-full bg-red-600 text-white py-2 rounded-lg text-sm"
+        >
+          Book Now
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }
