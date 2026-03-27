@@ -10,7 +10,29 @@ import Image from "next/image";
 /* =========================
    MASTER DATA
 ========================= */
+type ColorKey =
+  | "#ffffff"
+  | "#000000"
+  | "#6b7280"
+  | "#d1d5db"
+  | "#dc2626"
+  | "#2563eb"
+  | "#059669"
+  | "#7c3aed"
+  | "#f59e0b";
 
+
+const COLOR_MAP: Record<ColorKey, any> = {
+  "#ffffff": "White",
+  "#000000": "Black",
+  "#6b7280": "Grey",
+  "#d1d5db": "Silver",
+  "#dc2626": "Red",
+  "#2563eb": "Blue",
+  "#059669": "Green",
+  "#7c3aed": "Purple",
+  "#f59e0b": "Yellow",
+};
 const BRANDS = [
   { name: "Audi", image: "/assets/image/brands/car1.png" },
   { name: "BMW", image: "/assets/image/brands/car9.png" },
@@ -62,17 +84,6 @@ const COLORS = [
   "#dc2626","#2563eb","#059669","#7c3aed","#f59e0b",
 ];
 
-const COLOR_MAP = {
-  "#ffffff": "White",
-  "#000000": "Black",
-  "#6b7280": "Grey",
-  "#d1d5db": "Silver",
-  "#dc2626": "Red",
-  "#2563eb": "Blue",
-  "#059669": "Green",
-  "#7c3aed": "Purple",
-  "#f59e0b": "Yellow",
-};
 
 const FUELS = ["Petrol", "Diesel", "CNG", "Electric"];
 
@@ -87,7 +98,7 @@ export default function VehiclePage() {
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [vehicleType, setVehicleType] = useState("");
-  const [color, setColor] = useState("");
+const [color, setColor] = useState<ColorKey | "">("");
   const [fuelType, setFuelType] = useState("");
   const [reg, setReg] = useState("");
 
@@ -114,7 +125,7 @@ export default function VehiclePage() {
       brand,
       model,
       vehicleType,
-      color: COLOR_MAP[color],
+     color: (COLOR_MAP as any)[color],
       fuelType,
       registrationNumber: reg,
     });
@@ -253,7 +264,7 @@ export default function VehiclePage() {
 
           {/* COLORS */}
           <div className="flex gap-2">
-            {COLORS.map((c) => (
+            {COLORS.map((c: any) => (
               <div
                 key={c}
                 onClick={() => setColor(c)}
