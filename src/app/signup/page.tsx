@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Logo from "@/public/logo.png";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+import { BASE_URL } from "@/app/utils/config";
 
 export default function SignUpPage() {
   const router = useRouter();
