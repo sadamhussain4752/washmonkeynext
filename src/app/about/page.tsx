@@ -160,7 +160,7 @@ export default function AboutPage() {
 
           <div className="flex justify-center gap-4">
             <Link
-              href="/book"
+              href="/services"
               className="px-6 py-3 bg-white text-primary rounded-md hover:bg-gray-100 transition"
             >
               Book Now

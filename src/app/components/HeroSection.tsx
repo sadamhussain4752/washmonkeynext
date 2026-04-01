@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Leaf, Calendar } from "lucide-react";
+import { ArrowRight, ShieldCheck, Leaf, Calendar,User } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 
 export default function HeroSection() {
@@ -71,8 +71,8 @@ export default function HeroSection() {
                 variant="outline"
                 className="w-full sm:w-auto border-white text-black hover:bg-white hover:text-primary"
               >
-                <Calendar className="mr-2 w-5 h-5" />
-                Schedule Now
+                <User className="mr-2 w-5 h-5" />
+               Contact 
               </Button>
             </Link>
           </div>

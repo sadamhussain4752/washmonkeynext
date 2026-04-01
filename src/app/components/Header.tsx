@@ -180,7 +180,7 @@ export default function Header() {
      {/* 🔴 TOP ANNOUNCEMENT BAR */}
     <div className="bg-red-500 text-white text-sm overflow-hidden">
       <div className="whitespace-nowrap animate-marquee px-4 py-1">
-        ⏰ Working Hours: Mon - Sun | 9:00 AM - 6:00 PM 🚗 Book your service anytime!
+       ⏰ Working Hours: Wed - Mon | 9:00 AM - 6:00 PM (Tuesday Holiday) 🚗 Book your service anytime!
       </div>
     </div>
       <header className="bg-white border-b sticky top-0 z-40 shadow-sm">

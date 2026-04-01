@@ -411,7 +411,7 @@ const getIcon = (title: string) => {
       {/* Title */}
       <div className="text-center px-4 mt-2">
         <h3 className="text-sm font-semibold text-red-600">
-          {selectedPlan.tag || "Daily Shine Plan"}
+         {selectedPlan.category[0]}
         </h3>
         <p className="text-xs text-gray-600">
           {selectedPlan.name}

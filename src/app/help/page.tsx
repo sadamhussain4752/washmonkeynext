@@ -9,7 +9,7 @@ import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import Link from "next/link";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "";
+import { BASE_URL } from "@/app/utils/config";
 
 const ACTIVE = "bg-primary text-white border-primary";
 const INACTIVE = "bg-gray-100 text-gray-700 border-gray-300";
@@ -138,11 +138,15 @@ export default function HelpPage() {
     setFormValues((prev: any) => ({ ...prev, [key]: value }));
   };
 
+  
+
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
-
+  const userId : any =
+    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
       formData.append("issue", selectedIssue.issue);
+      formData.append("userId", userId);
       formData.append("subIssue", selectedSubIssue);
       formData.append("description", description);
       formData.append("details", JSON.stringify(formValues));
@@ -151,7 +155,18 @@ export default function HelpPage() {
         formData.append("file", image);
       }
 
-      await axios.post(`${BASE_URL}/api/support/create`, formData);
+
+       await axios.post(`${BASE_URL}api/support/create`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+     // ✅ RESET ALL FIELDS
+    setSelectedIssue(complaintOptions[0]);
+    setSelectedSubIssue("");
+    setFormValues({});
+    setDescription("");
+    setImage(null);
 
       alert("Submitted successfully");
     } catch (err) {
@@ -220,6 +235,28 @@ export default function HelpPage() {
         </div>
       );
     }
+    if (/vehicle type/i.test(label)) {
+  const vehicleTypes = ["SUV", "Sedan", "Hatchback"];
+
+  return (
+    <div key={label}>
+      <p className="text-sm font-medium mb-2">{label}</p>
+
+      <select
+        className="w-full border rounded-lg p-2 text-sm"
+        value={formValues[label] || ""}
+        onChange={(e) => handleInputChange(label, e.target.value)}
+      >
+        <option value="">Select Vehicle Type</option>
+        {vehicleTypes.map((type) => (
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
     if (/comment/i.test(label)) {
       return (
@@ -395,6 +432,7 @@ export default function HelpPage() {
         </div>
       </div>
     </div>
+    <div className="max-w-5xl mx-auto p-4 pb-[100px]"></div>
   </div>
 );
 }

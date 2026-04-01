@@ -53,23 +53,128 @@ const BRANDS = [
 ];
 
 const vehicleData: Record<string, string[]> = {
-  Audi: ["A3", "A4", "A6", "Q5"],
-  BMW: ["3 Series", "5 Series", "X1", "X5"],
-  Benz: ["C-Class", "E-Class", "GLA", "GLS"],
-  Honda: ["City", "Amaze"],
-  Hyundai: ["Creta", "i20", "Venue"],
-  Kia: ["Seltos", "Sonet"],
-  Mahindra: ["Thar", "Scorpio"],
-  "Maruti Suzuki": ["Swift", "Baleno"],
-  MG: ["Hector", "ZS EV"],
-  Nissan: ["Magnite"],
-  "Range Rover": ["Velar"],
-  Renault: ["Kwid"],
-  Skoda: ["Slavia"],
-  Tata: ["Nexon", "Harrier"],
-  Toyota: ["Fortuner"],
-  Volkswagen: ["Virtus"],
+  Audi: ["A3", "A4", "A6", "e-tron", "Q2", "Q3", "Q5", "Q7", "Q8", "RS / S"],
+
+  BMW: ["3 Series", "5 Series", "7 Series", "i4", "iX", "X1", "X3", "X5", "X7", "Z4"],
+
+  Benz: [
+    "A-Class",
+    "C-Class",
+    "E-Class",
+    "EQB",
+    "EQS",
+    "GLA",
+    "GLB",
+    "GLC",
+    "GLE",
+    "GLS",
+    "S-Class"
+  ],
+
+  Honda: ["Amaze", "City", "Elevate", "Jazz"],
+
+  Hyundai: [
+    "Alcazar",
+    "Aura",
+    "Creta / Creta N Line",
+    "Exter",
+    "i10 / Grand i10 Nios",
+    "i20 / i20 N Line",
+    "Ioniq 5",
+    "Prime HB",
+    "Prime SD",
+    "Tucson",
+    "Venue / Venue N Line",
+    "Verna"
+  ],
+
+  Kia: ["Carens", "Carnival", "Seltos", "Sonet", "Syros"],
+
+  Mahindra: [
+    "BE 6",
+    "Bolero / Bolero Neo",
+    "Scorpio N / Scorpio Classic",
+    "Thar / Thar Roxx",
+    "XEV 4e",
+    "XEV 9e",
+    "XUV3XO",
+    "XUV700 / XUV7XO"
+  ],
+
+  "Maruti Suzuki": [
+    "Alto 800 / Alto K10",
+    "Baleno",
+    "Brezza",
+    "Celerio",
+    "Ciaz",
+    "Dzire",
+    "Eeco",
+    "Ertiga",
+    "Fronx",
+    "Grand Vitara",
+    "Ignis",
+    "Invicto",
+    "Jimny",
+    "S-Presso",
+    "Swift",
+    "Victoris",
+    "Wagon R",
+    "XL6"
+  ],
+
+  MG: ["Astor", "Comet EV", "Gloster", "Hector", "Hector Plus", "ZS EV"],
+
+  Nissan: ["Gravite", "Kicks", "Magnite", "Tekton"],
+
+  "Range Rover": [
+    "Defender",
+    "Discovery",
+    "Discovery Sport",
+    "Range Rover",
+    "Range Rover Sport",
+    "Range Rover Velar"
+  ],
+
+  Renault: ["Bigster", "Duster", "Kwid", "Triber"],
+
+  Skoda: ["Kodiaq", "Kushaq", "Octavia / Octavia RS", "Slavia", "Superb"],
+
+  Tata: [
+    "Altroz",
+    "Avinya / Avinya X",
+    "Curvv",
+    "Harrier",
+    "Nexon",
+    "Punch",
+    "Safari",
+    "Sierra",
+    "Tiago",
+    "Tiago NRG",
+    "Tigor"
+  ],
+
+  Toyota: [
+    "Camry",
+    "Corolla",
+    "Fortuner",
+    "Glanza",
+    "Hilux",
+    "Innova",
+    "Innova Hycross",
+    "Land Cruiser",
+    "Prado",
+    "Urban Cruiser / Urban Cruiser Hyryder"
+  ],
+
+  Volkswagen: [
+    "Polo",
+    "Taigun",
+    "Tiguan / Tiguan Allspace",
+    "Vento",
+    "Virtus"
+  ]
 };
+
 
 const VEHICLE_TYPES = [
   { label: "Hatchback", image: "/assets/image/brands/c1.png" },
@@ -104,6 +209,8 @@ export default function VehiclePage() {
   const [fuelType, setFuelType] = useState("");
   const [reg, setReg] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
+  const [isValid, setIsValid] = useState(true);
+
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
@@ -146,55 +253,70 @@ export default function VehiclePage() {
   };
 
   const handleSave = async () => {
-    if (!brand || !model || !vehicleType) {
-      return toast.error("Fill all required fields");
+  if (!brand) return toast.error("Brand is required");
+  if (!model) return toast.error("Model is required");
+  if (!vehicleType) return toast.error("Vehicle type is required");
+  if (!reg) return toast.error("Registration number is required");
+  if (!fuelType) return toast.error("Please select fuel type");
+  if (!color) return toast.error("Please select vehicle color");
+
+  // REGEX validation for vehicle number (India format basic)
+  const regRegex = /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/i;
+  if (!regRegex.test(reg.replace(/\s/g, ""))) {
+    return toast.error("Invalid registration number (e.g. KA01AB1234)");
+  }
+
+  try {
+    if (editId) {
+      await axios.put(`${BASE_URL}api/vehicles/updatevehicle/${editId}`, {
+        userId,
+        brand,
+        model,
+        vehicleType,
+        color: (COLOR_MAP as any)[color],
+        fuelType,
+        registrationNumber: reg,
+      });
+
+      toast.success("Vehicle Updated 🚗");
+    } else {
+      await axios.post(`${BASE_URL}api/vehicles/createvehicle`, {
+        userId,
+        brand,
+        model,
+        vehicleType,
+        color: (COLOR_MAP as any)[color],
+        fuelType,
+        registrationNumber: reg,
+      });
+
+      toast.success("Vehicle Added 🚗");
     }
 
-    try {
-      if (editId) {
-        // UPDATE
-        await axios.put(`${BASE_URL}api/vehicles/updatevehicle/${editId}`, {
-          userId,
-          brand,
-          model,
-          vehicleType,
-          color: (COLOR_MAP as any)[color],
-          fuelType,
-          registrationNumber: reg,
-        });
+    // RESET
+    setStep(0);
+    setEditId(null);
+    setBrand("");
+    setModel("");
+    setVehicleType("");
+    setColor("");
+    setFuelType("");
+    setReg("");
 
-        toast.success("Vehicle Updated 🚗");
-      } else {
-        // CREATE
-        await axios.post(`${BASE_URL}api/vehicles/createvehicle`, {
-          userId,
-          brand,
-          model,
-          vehicleType,
-          color: (COLOR_MAP as any)[color],
-          fuelType,
-          registrationNumber: reg,
-        });
+    fetchVehicles();
+  } catch (err) {
+    toast.error("Something went wrong");
+    console.error(err);
+  }
+};
 
-        toast.success("Vehicle Added 🚗");
-      }
+const handleRegistrationChange = (text) => {
+  const upper = text.toUpperCase().replace(/\s/g, "");
+  setReg(upper);
 
-      // reset
-      setStep(0);
-      setEditId(null);
-      setBrand("");
-      setModel("");
-      setVehicleType("");
-      setColor("");
-      setFuelType("");
-      setReg("");
-
-      fetchVehicles();
-    } catch (err) {
-      toast.error("Something went wrong");
-      console.error(err);
-    }
-  };
+  const regex = /^TN\d{2}[A-Z]{1,2}\d{1,4}$/;
+  setIsValid(regex.test(upper));
+};
   /* ========================= UI ========================= */
 
   return (
@@ -242,7 +364,7 @@ export default function VehiclePage() {
                 {/* DELETE */}
                 <button
                   onClick={() => handleDelete(v._id)}
-                  className="text-red-500 text-xs border px-2 py-1 rounded"
+                  className="text-primary text-xs border px-2 py-1 rounded"
                   disabled={i === 0}
                 >
                   Delete
@@ -252,11 +374,14 @@ export default function VehiclePage() {
             </div>
           ))}
           <button
-            onClick={() => setStep(1)}
-            className="w-full border-dashed border p-3 rounded-xl text-red-500"
-          >
-            + Add Vehicle
-          </button>
+  onClick={() => setStep(1)}
+  className="w-full border-2 border-dashed border-primary text-primary py-2 rounded-xl 
+  flex items-center justify-center gap-2 font-medium 
+  hover:bg-primary hover:text-white transition-all duration-200 
+  hover:shadow-md active:scale-95"
+>
+  + Add Vehicle
+</button>
         </div>
       )}
 
@@ -268,7 +393,7 @@ export default function VehiclePage() {
               key={b.name}
               onClick={() => setBrand(b.name)}
               className={`p-3 bg-white rounded-xl border text-center cursor-pointer
-              ${brand === b.name && "border-red-500"}`}
+              ${brand === b.name && "border-primary"}`}
             >
               <Image
                 src={b.image}
@@ -281,12 +406,17 @@ export default function VehiclePage() {
             </div>
           ))}
 
-          <button
-            onClick={() => setStep(2)}
-            className="col-span-3 bg-red-500 text-white py-2 rounded mt-4"
-          >
-            Next
-          </button>
+         <button
+  onClick={() => {
+    if (!brand) {
+      return toast.error("Please select a brand");
+    }
+    setStep(2);
+  }}
+  className="col-span-3 bg-primary text-white py-2 rounded mt-4"
+>
+  Next
+</button>
         </div>
       )}
 
@@ -301,7 +431,7 @@ export default function VehiclePage() {
                 key={m}
                 onClick={() => setModel(m)}
                 className={`p-2 bg-white border rounded text-xs text-center cursor-pointer
-                ${model === m && "border-red-500"}`}
+                ${model === m && "border-primary"}`}
               >
                 {m}
               </div>
@@ -309,11 +439,16 @@ export default function VehiclePage() {
           </div>
 
           <button
-            onClick={() => setStep(3)}
-            className="w-full bg-red-500 text-white py-2 mt-4 rounded"
-          >
-            Next
-          </button>
+  onClick={() => {
+    if (!model) {
+      return toast.error("Please select a model");
+    }
+    setStep(3);
+  }}
+  className="w-full bg-primary text-white py-2 mt-4 rounded"
+>
+  Next
+</button>
         </div>
       )}
 
@@ -325,7 +460,7 @@ export default function VehiclePage() {
               key={v.label}
               onClick={() => setVehicleType(v.label)}
               className={`bg-white p-3 rounded-xl border text-center cursor-pointer
-              ${vehicleType === v.label && "border-red-500"}`}
+              ${vehicleType === v.label && "border-primary"}`}
             >
               <Image
                 src={v.image}
@@ -338,61 +473,97 @@ export default function VehiclePage() {
             </div>
           ))}
 
-          <button
-            onClick={() => setStep(4)}
-            className="col-span-2 bg-red-500 text-white py-2 rounded"
-          >
-            Next
-          </button>
+         <button
+  onClick={() => {
+    if (!vehicleType) {
+      return toast.error("Please select vehicle type");
+    }
+    setStep(4);
+  }}
+  className="col-span-2 bg-primary text-white py-2 rounded"
+>
+  Next
+</button>
         </div>
       )}
 
       {/* STEP 4: FINAL */}
       {step === 4 && (
-        <div className="p-4 space-y-3">
+  <div className="p-6 space-y-5">
 
-          <input
-            placeholder="Registration Number"
-            value={reg}
-            onChange={(e) => setReg(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
+    {/* REGISTRATION */}
+    <div>
+      <label className="text-sm font-medium text-gray-700">
+        Registration Number
+      </label>
+      <input
+        placeholder="TN01AB1234"
+        value={reg}
+        onChange={(e) => handleRegistrationChange(e.target.value)}
+        className="w-full border p-3 rounded mt-1 focus:ring-2 focus:ring-red-400 outline-none"
+        maxLength={10}
+      />
 
-          {/* COLORS */}
-          <div className="flex gap-2">
-            {COLORS.map((c: any) => (
-              <div
-                key={c}
-                onClick={() => setColor(c)}
-                style={{ backgroundColor: c }}
-                className={`w-6 h-6 rounded-full border cursor-pointer
-                ${color === c && "ring-2 ring-black"}`}
-              />
-            ))}
-          </div>
-
-          {/* FUEL */}
-          <div className="flex gap-2">
-            {FUELS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setFuelType(f)}
-                className={`px-3 py-1 text-xs rounded
-                ${fuelType === f ? "bg-red-500 text-white" : "bg-gray-200"}`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={handleSave}
-            className="w-full bg-red-500 text-white py-2 rounded"
-          >
-            Save Vehicle
-          </button>
-        </div>
+      {!isValid && reg && (
+        <p className="text-primary text-xs mt-1">
+          Invalid registration number (e.g. TN01AB1234)
+        </p>
       )}
+    </div>
+
+    {/* COLOR */}
+    <div>
+      <label className="text-sm font-medium text-gray-700">
+        Select Color
+      </label>
+
+      <div className="flex gap-3 mt-2 flex-wrap">
+        {COLORS.map((c: any) => (
+          <div
+            key={c}
+            onClick={() => setColor(c)}
+            style={{ backgroundColor: c }}
+            className={`w-7 h-7 rounded-full border cursor-pointer
+            ${color === c && "ring-2 ring-black scale-110"}`}
+          />
+        ))}
+      </div>
+    </div>
+
+    {/* FUEL */}
+    <div>
+      <label className="text-sm font-medium text-gray-700">
+        Fuel Type
+      </label>
+
+      <div className="flex gap-2 mt-2 flex-wrap">
+        {FUELS.map((f) => (
+          <button
+            key={f}
+            onClick={() => setFuelType(f)}
+            className={`px-4 py-2 text-sm rounded border transition
+            ${
+              fuelType === f
+                ? "bg-primary text-white border-primary"
+                : "bg-gray-100"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* SAVE BUTTON */}
+    <button
+      onClick={handleSave}
+      className="w-full bg-primary hover:bg-primary text-white py-2 rounded font-medium transition mt-4"
+    >
+      Save Vehicle
+    </button>
+  </div>
+)}
+      <div className="max-w-5xl mx-auto p-4 pb-[100px]"></div>
     </div>
   );
 }

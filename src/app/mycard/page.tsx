@@ -130,16 +130,25 @@ const checkout = () => {
     return;
   }
 
-  // ✅ Logged in
+  // ✅ Keep old + add new fields
   localStorage.setItem(
     "checkoutData",
     JSON.stringify({
+      // 🔹 OLD DATA (unchanged)
       cart,
       subtotal,
       discount,
       walletUsed,
       gst,
       total: Number(total.toFixed(2)),
+
+      // 🔥 NEW DATA ADDED
+      userId,
+      promocode,
+      netTotal: Number((subtotal - discount - walletUsed).toFixed(2)),
+
+     
+      createdAt: new Date().toISOString(),
     })
   );
 
@@ -197,7 +206,9 @@ const checkout = () => {
               <div className="flex border rounded-xl overflow-hidden">
                 <input
                   value={promocode}
-                  onChange={(e) => setPromocode(e.target.value)}
+                 onChange={(e) =>
+  setPromocode(e.target.value.toUpperCase().replace(/\s/g, ""))
+}
                   disabled={discount > 0}
                   placeholder="Enter your promocode"
                   className="flex-1 px-3 py-2 text-sm outline-none"
@@ -256,14 +267,14 @@ const checkout = () => {
 
           <div className="bg-white rounded-xl p-5 shadow-sm md:sticky md:top-24">
 
-            <p className="text-sm font-semibold mb-4 text-gray-700">
+            <p className="text-sm font-semibold text-gray-700 mb-1">
               Bill Summary
             </p>
 
-            <div className="space-y-3 text-sm ">
+            <div className="space-y-1 text-sm ">
 
               <div className="flex justify-between">
-                <span>{item?.name}</span>
+                <span> {item?.item?.category?.[0]} ({item?.name})</span>
                 <span>₹{subtotal}</span>
               </div>
 
@@ -286,7 +297,7 @@ const checkout = () => {
                 <span>₹{netTotal.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between">
                 <span>GST (18%)</span>
                 <span>₹{gst.toFixed(2)}</span>
               </div>

@@ -27,15 +27,17 @@ const Checkout = () => {
   const hasCalledRef = useRef(false);
 
   /* ---------------- CHECKOUT DATA ---------------- */
-  const [checkoutData, setCheckoutData] = useState({
-    cart: [],
-    subtotal: 0,
-    discount: 0,
-    delivery: 0,
-    walletUsed: 0,
-    promocode: "",
-    total: 0,
-  });
+ const [checkoutData, setCheckoutData] = useState({
+  cart: [],
+  items: [],
+  subtotal: 0,
+  discount: 0,
+  walletUsed: 0,
+  promocode: "",
+  total: 0,
+  netTotal: 0,
+  gst: 0,
+});
 
   // Load checkout data from localStorage
   useEffect(() => {
@@ -52,9 +54,17 @@ const Checkout = () => {
     }
   }, []);
 
-  const { cart, subtotal, discount, delivery, walletUsed, promocode, total } =
-    checkoutData;
-
+const {
+  cart = [],
+  items = [],
+  subtotal = 0,
+  discount = 0,
+  walletUsed = 0,
+  promocode = "",
+  total = 0,
+  netTotal = 0,
+  gst = 0,
+} = checkoutData;
   /* ---------------- STATE ---------------- */
   const [addresses, setAddresses] = useState([]);
   const [vehicles, setVehicles] = useState([]);
@@ -146,41 +156,63 @@ const Checkout = () => {
         {/* LEFT */}
         <div className="lg:col-span-2 space-y-4">
           {/* SUMMARY */}
-          <div className="border rounded-xl p-4">
-            <h6 className="flex items-center gap-2 font-semibold mb-3">
-              My Order
-            </h6>
-         {cart.map((item: any, i: number) => {
-  const price = Number(item.price) || 0;
-  const gstAmount = (price * 18) / 100;
+        <div className="border rounded-xl p-4">
+  <h6 className="font-semibold mb-3">My Order</h6>
 
-  return (
-    <div key={i} className="space-y-1 border-b pb-2 mb-2">
-      
-      {/* Category + Name */}
-      <div className="flex justify-between text-sm">
+  {/* ITEMS */}
+  {(items.length ? items : cart).map((item: any, i: number) => {
+    const price = Number(item.price || 0);
+
+    return (
+      <div key={i} className="flex justify-between text-sm mb-2">
         <span>
-          {item.item.category?.[0] || "No Category"} - {item.name}
+          {item?.category || item?.item?.category?.[0]} ({item.name})
         </span>
-        <span>₹{price}</span>
+        <span>₹{price.toFixed(2)}</span>
       </div>
+    );
+  })}
 
-      {/* GST */}
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>GST (18%)</span>
-        <span>₹{gstAmount.toFixed(2)}</span>
-      </div>
+  
 
-      {/* Total */}
-      <div className="flex justify-between text-sm font-medium">
-        <span>Total</span>
-        <span>₹{(total).toFixed(2)}</span>
-      </div>
-
+  {/* DISCOUNT */}
+  {discount > 0 && (
+    <div className="flex justify-between text-green-600 text-sm">
+      <span>Discount ({promocode})</span>
+      <span>-₹{discount.toFixed(2)}</span>
     </div>
-  );
-})}
-          </div>
+  )}
+
+  {/* WALLET */}
+  {walletUsed > 0 && (
+    <div className="flex justify-between text-green-600 text-sm">
+      <span>Wallet Used</span>
+      <span>-₹{walletUsed.toFixed(2)}</span>
+    </div>
+  )}
+
+  {/* NET TOTAL */}
+  <div className="flex justify-between text-sm">
+    <span>Net Total</span>
+    <span>
+      ₹{(netTotal || subtotal - discount - walletUsed).toFixed(2)}
+    </span>
+  </div>
+
+  {/* GST */}
+  <div className="flex justify-between text-sm">
+    <span>GST (18%)</span>
+    <span>
+      ₹{(gst || (total * 0.18)).toFixed(2)}
+    </span>
+  </div>
+
+  {/* FINAL */}
+  <div className="flex justify-between font-semibold text-base pt-1">
+    <span>Total Payable</span>
+    <span>₹{total.toFixed(2)}</span>
+  </div>
+</div>
 
           {/* SLOT */}
           <div className="border rounded-xl p-4">

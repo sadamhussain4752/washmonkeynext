@@ -12,6 +12,7 @@ import {
   MessageCircle,
   ShieldCheck,
 } from "lucide-react";
+import Link from "next/link";
 
 export const metadata = {
   title: "Contact Wash Monkey | Book Car Wash & Support",
@@ -42,7 +43,7 @@ export default function ContactPage() {
           <ContactCard
             icon={<Phone className="text-primary" />}
             title="Call Us"
-            description="+91 98765 43210"
+            description="+91 81482 74827"
           />
           <ContactCard
             icon={<Mail className="text-primary" />}
@@ -52,18 +53,18 @@ export default function ContactPage() {
           <ContactCard
             icon={<MapPin className="text-primary" />}
             title="Service Area"
-            description="Chennai & Nearby Areas"
+            description="Adyan, Thiruvanmiyur , OMR"
           />
           <ContactCard
             icon={<Clock className="text-primary" />}
             title="Working Hours"
-            description="8:00 AM – 8:00 PM"
+            description="6:00 AM – 6:00 PM"
           />
         </div>
       </section>
 
       {/* ================= CONTACT FORM ================= */}
-      <section className="bg-gray-50 py-16 px-6">
+      {/* <section className="bg-gray-50 py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-semibold text-center mb-10 text-primary">
             Send Us a Message
@@ -97,7 +98,7 @@ export default function ContactPage() {
             </button>
           </form>
         </div>
-      </section>
+      </section> */}
 
       {/* ================= MAP ================= */}
       <section className="py-16 px-6">
@@ -116,7 +117,7 @@ export default function ContactPage() {
       </section>
 
       {/* ================= BRANCHES ================= */}
-      <section className="bg-gray-50 py-16 px-6">
+      {/* <section className="bg-gray-50 py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-semibold text-center mb-12 text-primary">
             Our Branches
@@ -128,7 +129,7 @@ export default function ContactPage() {
             <Branch name="OMR" />
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ================= SOCIAL ================= */}
       <section className="py-16 px-6">
@@ -136,12 +137,15 @@ export default function ContactPage() {
           <h2 className="text-3xl font-semibold mb-6 text-primary">
             Follow Us
           </h2>
+<div className="flex justify-center gap-6">
+  <a href="https://www.facebook.com/share/1Gb5WahkWp/" target="_blank" rel="noopener noreferrer">
+    <Social icon={<Facebook />} />
+  </a>
 
-          <div className="flex justify-center gap-6">
-            <Social icon={<Facebook />} />
-            <Social icon={<Instagram />} />
-            <Social icon={<Twitter />} />
-          </div>
+  <a href="https://www.instagram.com/washmonkey.in?igsh=dmNnc3M4bnR2OHo4" target="_blank" rel="noopener noreferrer">
+    <Social icon={<Instagram />} />
+  </a>
+</div>
         </div>
       </section>
 
@@ -194,7 +198,10 @@ export default function ContactPage() {
           </p>
 
           <button className="bg-white text-primary px-8 py-3 rounded-md font-medium hover:bg-gray-100 transition">
-            Book Now
+            <Link  href ="/services">
+             Book Now
+            </Link>
+           
           </button>
         </div>
       </section>

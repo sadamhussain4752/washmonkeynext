@@ -145,7 +145,7 @@ const PlansSection = () => {
                       <div>
 
 
-                        <p className="text-[10px] text-red-500 font-medium">
+                        <p className="text-[10px] text-primary font-medium">
                           {plan.category[0]}
                         </p>
 
@@ -167,7 +167,7 @@ const PlansSection = () => {
                             ₹{plan.offeramount}
                           </span>
                         )}
-                        <span className="text-red-600 font-semibold text-sm">
+                        <span className="text-primary font-semibold text-sm">
                           ₹{plan.price}
                         </span>
                       </div>
@@ -197,7 +197,7 @@ const PlansSection = () => {
 
                   <button
                     onClick={() => addToCart(plan)}
-                    className="mt-2 w-full bg-red-600 text-white text-xs py-1.5 rounded-md"
+                    className="mt-2 w-full bg-primary text-white text-xs py-1.5 rounded-md"
                   >
                     Book Now
                   </button>
@@ -205,7 +205,7 @@ const PlansSection = () => {
               </div>
 
               {/* ================= DESKTOP CARD (OLD DESIGN) ================= */}
-              <Card className="hidden md:block overflow-hidden h-full hover:shadow-xl transition-shadow">
+            <Card className="hidden md:block overflow-hidden h-full hover:shadow-xl transition-shadow border-2 border-primary">
 
                 <img
                   src={plan.image}
@@ -214,31 +214,42 @@ const PlansSection = () => {
                 />
 
                 <div className="p-6 flex flex-col h-full">
-                  <h3 className="mb-1 text-xl font-semibold">
+                   <p className=" text-xl text-primary font-medium">
+                          {plan.category[0]}
+                        </p>
+                  <h3 className=" text-[17px] mb-1  font-semibold">
                     {plan.name}
                   </h3>
+                  
 
-                  <div
+                  {/* <div
                     className="text-gray-600 mb-4 text-sm"
                     dangerouslySetInnerHTML={{ __html: plan.description }}
-                  />
+                  /> */}
 
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">
-                      ₹{plan.price}
-                    </span>
-                    <span className="text-gray-500 text-sm">
-                      {" "} / service
-                    </span>
-                  </div>
+                 <div className="mb-4">
+                   {plan.offeramount && (
+                          <span className="text-[22px] text-gray-400 line-through  mx-2 ">
+                            ₹{plan.offeramount}
+                          </span>
+                        )}
+                  
+  <span className="text-3xl font-bold text-primary-500">
+    ₹{plan.price}
+  </span>
+  
+  <span className="text-gray-500 text-sm">
+    {" "} / {plan.days === 1 ? "service" : "Month"}
+  </span>
+</div>
 
                   <ul className="space-y-2 mb-6">
                     <li className="flex items-start text-sm">
-                      <CheckCircle className="w-4 h-4 text-red-600 mr-2 mt-0.5" />
-                      {plan.days + plan.interior} Days Service
+                      <CheckCircle className="w-4 h-4 text-primary mr-2 mt-0.5" />
+                      {plan.days + plan.interior} Days 
                     </li>
                     <li className="flex items-start text-sm">
-                      <CheckCircle className="w-4 h-4 text-red-600 mr-2 mt-0.5" />
+                      <CheckCircle className="w-4 h-4 text-primary mr-2 mt-0.5" />
                       Interior: {plan.interior} times
                     </li>
                   </ul>
@@ -279,8 +290,8 @@ const PlansSection = () => {
 
             {/* Title */}
             <div className="text-center px-4 mt-2">
-              <h3 className="text-sm font-semibold text-red-600">
-                {selectedPlan.tag || "Daily Shine Plan"}
+              <h3 className="text-sm font-semibold text-primary">
+                {selectedPlan.category[0]}
               </h3>
               <p className="text-xs text-gray-600">
                 {selectedPlan.name}
@@ -323,7 +334,7 @@ const PlansSection = () => {
                   addToCart(selectedPlan);
                   setOpen(false);
                 }}
-                className="w-full bg-red-600 text-white py-2 rounded-lg text-sm mb-10"
+                className="w-full bg-primary text-white py-2 rounded-lg text-sm mb-10"
               >
                 Book Now
               </button>
