@@ -310,7 +310,7 @@ export default function VehiclePage() {
   }
 };
 
-const handleRegistrationChange = (text) => {
+const handleRegistrationChange = (text: any) => {
   const upper = text.toUpperCase().replace(/\s/g, "");
   setReg(upper);
 
