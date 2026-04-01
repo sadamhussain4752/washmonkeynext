@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { BASE_URL, ENDPOINTS } from "@/app/utils/config";
-
+import { toast } from "sonner";
 export default function OrderPage() {
   const router = useRouter();
 
@@ -112,9 +112,25 @@ export default function OrderPage() {
   };
 
   /* ================= CHECKOUT ================= */
+
+
 const checkout = () => {
   if (!cart.length) return;
 
+  const userId = localStorage.getItem("userId");
+
+  // ❌ Not logged in
+  if (!userId) {
+    toast.error("Please login to continue");
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+
+    return;
+  }
+
+  // ✅ Logged in
   localStorage.setItem(
     "checkoutData",
     JSON.stringify({
@@ -123,7 +139,7 @@ const checkout = () => {
       discount,
       walletUsed,
       gst,
-      total: Number(total.toFixed(2)), // ✅ correct
+      total: Number(total.toFixed(2)),
     })
   );
 

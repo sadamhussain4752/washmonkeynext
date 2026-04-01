@@ -294,7 +294,7 @@ export default function Page() {
   </div>
 </section>
 <a
-  href="https://wa.me/919876543210"
+  href="https://wa.me/918148274827"
   target="_blank"
   rel="noopener noreferrer"
   className="fixed bottom-18 md:bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-lg hover:scale-105 transition z-50 flex items-center justify-center"

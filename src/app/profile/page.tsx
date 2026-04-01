@@ -37,7 +37,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: "Profile", icon: <User size={20} />, route: "/profile" },
+  { label: "Profile", icon: <User size={20} />, action: "profile" },
   { label: "Vehicles", icon: <Car size={20} />, route: "/vehicles" },
   { label: "Addresses", icon: <MapPin size={20} />, route: "/addresses" },
   { label: "Orders", icon: <Package size={20} />, route: "/orders" },
@@ -46,7 +46,7 @@ const navItems: NavItem[] = [
   {
     label: "T & C",
     icon: <FileText size={20} />,
-    url: "https://washmonkey.in/terms-and-conditions.html",
+    url: "https://washmonkey.in/terms-and-conditions",
   },
   { label: "Share App", icon: <Share2 size={20} />, action: "share" },
   { label: "Rate Our App", icon: <Star size={20} />, action: "rate" },
@@ -58,6 +58,38 @@ const navItems: NavItem[] = [
     action: "delete",
   },
 ];
+
+function Modal({
+  open,
+  title,
+  children,
+  onClose,
+}: {
+  open: boolean;
+  title: string;
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white w-[90%] max-w-md rounded-2xl p-5 relative">
+
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500"
+        >
+          ✕
+        </button>
+
+        <h2 className="text-lg font-semibold mb-4">{title}</h2>
+
+        {children}
+      </div>
+    </div>
+  );
+}
 
 /* ================= COMPONENTS ================= */
 
@@ -147,7 +179,16 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-
+  const [isEditing, setIsEditing] = useState(false);
+const [formData, setFormData] = useState({
+  firstname: "",
+  lastname: "",
+  email: "",
+  mobilenumber: "",
+});
+const [imageFile, setImageFile] = useState<File | null>(null);
+const [preview, setPreview] = useState<string | null>(null);
+const [editModalOpen, setEditModalOpen] = useState(false);
   /* ---------- Read localStorage ---------- */
   useEffect(() => {
     const uid = localStorage.getItem("userId");
@@ -177,6 +218,14 @@ export default function ProfilePage() {
           }
         );
         setUser(res.data?.User);
+        setUser(res.data?.User);
+
+setFormData({
+  firstname: res.data?.User?.firstname || "",
+  lastname: res.data?.User?.lastname || "",
+  email: res.data?.User?.email || "",
+  mobilenumber: res.data?.User?.mobilenumber || "",
+});
       } catch (err) {
         console.error("Profile fetch failed", err);
       } finally {
@@ -214,6 +263,10 @@ export default function ProfilePage() {
       );
       return;
     }
+if (item.action === "profile") {
+     setEditModalOpen(true)
+      return;
+    }
 
     if (item.action === "logout") {
       localStorage.clear();
@@ -233,6 +286,54 @@ export default function ProfilePage() {
     }
   };
 
+
+  const handleChange = (e: any) => {
+  setFormData({ ...formData, [e.target.name]: e.target.value });
+};
+
+const handleImageChange = (e: any) => {
+  const file = e.target.files[0];
+  if (file) {
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  }
+};
+
+const handleUpdate = async () => {
+  try {
+    const form = new FormData();
+
+    form.append("firstName", formData.firstname);
+    form.append("lastName", formData.lastname);
+    form.append("email", formData.email);
+    form.append("mobilenumber", formData.mobilenumber);
+
+    if (imageFile) {
+      form.append("file", imageFile); // ✅ MUST MATCH MULTER
+    }
+
+    const res = await axios.post(
+      `${BASE_URL}api/user/UserImage/${userId}`,
+      form,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res?.data?.success) {
+      setUser(res.data.user);
+      setIsEditing(false);
+      setPreview(null);
+      alert("Profile updated successfully");
+    } else {
+      alert("Update failed");
+    }
+  } catch (err: any) {
+    console.error("Upload error:", err?.response?.data || err.message);
+  }
+};
   if (loading) {
     return <div className="py-20 text-center">Loading profile...</div>;
   }
@@ -286,19 +387,80 @@ export default function ProfilePage() {
 
       {/* PROFILE CARD */}
       <div className="bg-white rounded-2xl p-5 shadow-sm text-center relative">
-        <img
-          src={user?.profile_img || "/avatar.png"}
-          className="w-20 h-20 rounded-full mx-auto mb-3 object-cover"
-        />
-        <h2 className="font-semibold text-lg text-gray-800">
-          {user?.firstname} {user?.lastname}
-        </h2>
-        <p className="text-sm text-gray-500">{user?.email}</p>
 
-        <button className="absolute right-4 top-4 text-red-600 text-xs font-medium">
-          Edit
-        </button>
-      </div>
+  <div className="relative w-20 h-20 mx-auto mb-3">
+    <img
+      src={preview || user?.profile_img || "/avatar.png"}
+      className="w-20 h-20 rounded-full object-cover"
+    />
+
+    {isEditing && (
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="absolute inset-0 opacity-0 cursor-pointer"
+      />
+    )}
+  </div>
+
+  {isEditing ? (
+    <>
+      <input
+        name="firstname"
+        value={formData.firstname}
+        onChange={handleChange}
+        placeholder="First Name"
+        className="border p-2 rounded w-full mb-2"
+      />
+
+      <input
+        name="lastname"
+        value={formData.lastname}
+        onChange={handleChange}
+        placeholder="Last Name"
+        className="border p-2 rounded w-full mb-2"
+      />
+
+      <input
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        placeholder="Email"
+        className="border p-2 rounded w-full mb-2"
+      />
+
+      <input
+        name="mobilenumber"
+        value={formData.mobilenumber}
+        onChange={handleChange}
+        placeholder="Mobile"
+        className="border p-2 rounded w-full mb-2"
+      />
+
+      <button
+        onClick={handleUpdate}
+        className="bg-red-600 text-white px-4 py-2 rounded mt-2"
+      >
+        Save
+      </button>
+    </>
+  ) : (
+    <>
+      <h2 className="font-semibold text-lg text-gray-800">
+        {user?.firstname} {user?.lastname}
+      </h2>
+      <p className="text-sm text-gray-500">{user?.email}</p>
+    </>
+  )}
+
+ <button
+  onClick={() => setEditModalOpen(true)}
+  className="absolute right-4 top-4 text-red-600 text-xs font-medium"
+>
+  Edit
+</button>
+</div>
 
       {/* SETTINGS LIST */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -325,6 +487,88 @@ export default function ProfilePage() {
 
     </div>
   </div>
+  <Modal
+  open={editModalOpen}
+  title="Edit Profile"
+  onClose={() => setEditModalOpen(false)}
+>
+  <div className="space-y-3">
+
+    {/* IMAGE */}
+    <div className="flex flex-col items-center">
+      <img
+        src={preview || user?.profile_img || "/avatar.png"}
+        className="w-20 h-20 rounded-full object-cover mb-2"
+      />
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="text-xs"
+
+      />
+    </div>
+
+    {/* FIRST NAME */}
+    <input
+      name="firstname"
+      value={formData.firstname}
+      onChange={handleChange}
+      placeholder="First Name"
+      className="border p-2 rounded w-full"
+    />
+
+    {/* LAST NAME */}
+    <input
+      name="lastname"
+      value={formData.lastname}
+      onChange={handleChange}
+      placeholder="Last Name"
+      className="border p-2 rounded w-full"
+    />
+
+    {/* EMAIL */}
+    <input
+      name="email"
+      value={formData.email}
+      onChange={handleChange}
+      placeholder="Email"
+      className="border p-2 rounded w-full"
+      disabled
+    />
+
+    {/* MOBILE */}
+    <input
+      name="mobilenumber"
+      value={formData.mobilenumber}
+      onChange={handleChange}
+      placeholder="Mobile"
+      className="border p-2 rounded w-full"
+      disabled
+    />
+
+    {/* ACTIONS */}
+    <div className="flex gap-2 pt-2">
+      <button
+        onClick={() => setEditModalOpen(false)}
+        className="flex-1 bg-gray-200 py-2 rounded"
+      >
+        Cancel
+      </button>
+
+      <button
+        onClick={async () => {
+          await handleUpdate();
+          setEditModalOpen(false);
+        }}
+        className="flex-1 bg-red-600 text-white py-2 rounded"
+      >
+        Save
+      </button>
+    </div>
+  </div>
+</Modal>
 </>
     
   );

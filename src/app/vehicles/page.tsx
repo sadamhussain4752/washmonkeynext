@@ -6,7 +6,7 @@ import { BASE_URL } from "@/app/utils/config";
 import { Car } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
-
+import { useRouter, useSearchParams } from "next/navigation";
 /* =========================
    MASTER DATA
 ========================= */
@@ -80,8 +80,8 @@ const VEHICLE_TYPES = [
 ];
 
 const COLORS = [
-  "#ffffff","#000000","#6b7280","#d1d5db",
-  "#dc2626","#2563eb","#059669","#7c3aed","#f59e0b",
+  "#ffffff", "#000000", "#6b7280", "#d1d5db",
+  "#dc2626", "#2563eb", "#059669", "#7c3aed", "#f59e0b",
 ];
 
 
@@ -93,15 +93,17 @@ const FUELS = ["Petrol", "Diesel", "CNG", "Electric"];
 
 export default function VehiclePage() {
   const [step, setStep] = useState(0);
-
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromCheckout = searchParams.get("from") === "checkout";
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [vehicleType, setVehicleType] = useState("");
-const [color, setColor] = useState<ColorKey | "">("");
+  const [color, setColor] = useState<ColorKey | "">("");
   const [fuelType, setFuelType] = useState("");
   const [reg, setReg] = useState("");
-
+  const [editId, setEditId] = useState<string | null>(null);
   const userId =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
@@ -115,46 +117,140 @@ const [color, setColor] = useState<ColorKey | "">("");
     fetchVehicles();
   }, []);
 
+  const handleEdit = (vehicle: any) => {
+    setEditId(vehicle._id);
+
+    setBrand(vehicle.brand);
+    setModel(vehicle.model);
+    setVehicleType(vehicle.vehicleType);
+    setFuelType(vehicle.fuelType || "");
+    setReg(vehicle.registrationNumber || "");
+
+    // reverse color mapping (optional safe fallback)
+    const matchedColor = COLORS.find((c) => COLOR_MAP[c as ColorKey] === vehicle.color);
+    setColor((matchedColor as ColorKey) || "");
+
+    setStep(1); // jump into edit flow
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`${BASE_URL}api/vehicles/getvehicle/${id}`);
+
+      toast.success("Vehicle deleted");
+      fetchVehicles();
+    } catch (err) {
+      toast.error("Delete failed");
+      console.error(err);
+    }
+  };
+
   const handleSave = async () => {
     if (!brand || !model || !vehicleType) {
       return toast.error("Fill all required fields");
     }
 
-    await axios.post(`${BASE_URL}api/vehicles/createvehicle`, {
-      userId,
-      brand,
-      model,
-      vehicleType,
-     color: (COLOR_MAP as any)[color],
-      fuelType,
-      registrationNumber: reg,
-    });
+    try {
+      if (editId) {
+        // UPDATE
+        await axios.put(`${BASE_URL}api/vehicles/updatevehicle/${editId}`, {
+          userId,
+          brand,
+          model,
+          vehicleType,
+          color: (COLOR_MAP as any)[color],
+          fuelType,
+          registrationNumber: reg,
+        });
 
-    toast.success("Vehicle Added 🚗");
-    setStep(0);
-    fetchVehicles();
+        toast.success("Vehicle Updated 🚗");
+      } else {
+        // CREATE
+        await axios.post(`${BASE_URL}api/vehicles/createvehicle`, {
+          userId,
+          brand,
+          model,
+          vehicleType,
+          color: (COLOR_MAP as any)[color],
+          fuelType,
+          registrationNumber: reg,
+        });
+
+        toast.success("Vehicle Added 🚗");
+      }
+
+      // reset
+      setStep(0);
+      setEditId(null);
+      setBrand("");
+      setModel("");
+      setVehicleType("");
+      setColor("");
+      setFuelType("");
+      setReg("");
+
+      fetchVehicles();
+    } catch (err) {
+      toast.error("Something went wrong");
+      console.error(err);
+    }
   };
-
   /* ========================= UI ========================= */
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-100">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6">
 
       {/* HEADER */}
-      <div className="p-4 font-semibold flex items-center gap-2 bg-white shadow">
-        <Car size={18} /> Manage Vehicles
+      <div className="p-4 font-semibold flex items-center justify-between bg-white shadow">
+        <div className="flex items-center gap-2">
+          <Car size={18} /> Manage Vehicles
+        </div>
+
+        {fromCheckout && (
+          <button
+            onClick={() => router.back()}
+            className="text-sm border px-3 py-1 rounded"
+          >
+            ← Go Back
+          </button>
+        )}
       </div>
 
       {/* LIST */}
       {step === 0 && (
         <div className="p-4 space-y-3">
-          {vehicles.map((v) => (
-            <div key={v._id} className="bg-white p-3 rounded-xl shadow">
-              <p className="font-medium">{v.brand} {v.model}</p>
-              <p className="text-xs text-gray-500">{v.registrationNumber}</p>
+          {vehicles.map((v,i) => (
+            <div key={v._id} className="bg-white p-3 rounded-xl shadow flex justify-between items-center">
+
+              {/* LEFT INFO */}
+              <div>
+                <p className="font-medium">{v.brand} {v.model}</p>
+                <p className="text-xs text-gray-500">{v.registrationNumber}</p>
+              </div>
+
+              {/* RIGHT ACTIONS */}
+              <div className="flex gap-2">
+
+                {/* EDIT */}
+                <button
+                  onClick={() => handleEdit(v)}
+                  className="text-blue-500 text-xs border px-2 py-1 rounded"
+                >
+                  Edit
+                </button>
+
+                {/* DELETE */}
+                <button
+                  onClick={() => handleDelete(v._id)}
+                  className="text-red-500 text-xs border px-2 py-1 rounded"
+                  disabled={i === 0}
+                >
+                  Delete
+                </button>
+
+              </div>
             </div>
           ))}
-
           <button
             onClick={() => setStep(1)}
             className="w-full border-dashed border p-3 rounded-xl text-red-500"
@@ -174,13 +270,13 @@ const [color, setColor] = useState<ColorKey | "">("");
               className={`p-3 bg-white rounded-xl border text-center cursor-pointer
               ${brand === b.name && "border-red-500"}`}
             >
-             <Image
-  src={b.image}
-  alt={b.name}
-  width={50}
-  height={50}
-  className="mx-auto"
-/>
+              <Image
+                src={b.image}
+                alt={b.name}
+                width={50}
+                height={50}
+                className="mx-auto"
+              />
               <p className="text-xs">{b.name}</p>
             </div>
           ))}
@@ -231,13 +327,13 @@ const [color, setColor] = useState<ColorKey | "">("");
               className={`bg-white p-3 rounded-xl border text-center cursor-pointer
               ${vehicleType === v.label && "border-red-500"}`}
             >
-            <Image
-  src={v.image}
-  alt={v.label}
-  width={60}
-  height={60}
-  className="mx-auto"
-/>
+              <Image
+                src={v.image}
+                alt={v.label}
+                width={60}
+                height={60}
+                className="mx-auto"
+              />
               <p className="text-xs">{v.label}</p>
             </div>
           ))}

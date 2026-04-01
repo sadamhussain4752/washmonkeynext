@@ -290,7 +290,9 @@ const Checkout = () => {
     {/* Sticky Bottom Button */}
     <div className="p-3 border-t bg-white sticky bottom-0">
       <button
-        onClick={() => console.log("Add New Address")}
+        onClick={() => {
+           router.push("/addresses?from=checkout");
+        }}
         className="w-full bg-primary text-white py-3 rounded-xl font-medium shadow-md hover:bg-primary/90 transition"
       >
         + Add New Address
@@ -364,7 +366,9 @@ const Checkout = () => {
     {/* Sticky Bottom Button */}
     <div className="p-3 border-t bg-white sticky bottom-0">
       <button
-        onClick={() => console.log("Add Vehicle")}
+        onClick={() => {
+          router.push("/vehicles?from=checkout");
+        }}
         className="w-full bg-primary text-white py-3 rounded-xl font-medium shadow-md hover:bg-primary/90 transition"
       >
         + Add Vehicle

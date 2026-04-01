@@ -83,8 +83,8 @@ export default function HelpAndSupportPage() {
             icon: <Phone className="w-6 h-6 text-red-600" />,
             title: "Phone Support",
             description: "Call us anytime",
-            value: "+91 98765 43210",
-            action: "tel:+919876543210",
+            value: "+91 81482 74827",
+            action: "tel:+918148274827",
         },
         {
             icon: <Mail className="w-6 h-6 text-red-600" />,

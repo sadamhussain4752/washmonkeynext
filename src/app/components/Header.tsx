@@ -176,7 +176,14 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
+    <>
+     {/* 🔴 TOP ANNOUNCEMENT BAR */}
+    <div className="bg-red-500 text-white text-sm overflow-hidden">
+      <div className="whitespace-nowrap animate-marquee px-4 py-1">
+        ⏰ Working Hours: Mon - Sun | 9:00 AM - 6:00 PM 🚗 Book your service anytime!
+      </div>
+    </div>
+      <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
 
         {/* LOGO */}
@@ -217,11 +224,11 @@ export default function Header() {
 
           {/* PHONE */}
           <a
-            href="tel:+919876543210"
+            href="tel:+918148274827"
             className="flex items-center gap-2 text-gray-600 hover:text-red-600"
           >
             <Phone className="w-4 h-4" />
-            +91 98765 43210
+            +91 81482 74827
           </a>
 
           {/* PROFILE MENU */}
@@ -392,8 +399,8 @@ export default function Header() {
               {!loading && user && (
                 <>
 
-                  <a href="tel:+919876543210" className="flex items-center gap-2  text-black-600 font-medium mt-5">
-                    <Phone className="w-5 h-5" color="red" /> +91 98765 43210
+                  <a href="tel:+918148274827" className="flex items-center gap-2  text-black-600 font-medium mt-5">
+                    <Phone className="w-5 h-5" color="red" /> +91 81482 74827
                   </a>
                 </>
               )}
@@ -403,5 +410,7 @@ export default function Header() {
         </Sheet>
       </div>
     </header>
+    </>
+  
   );
 }
