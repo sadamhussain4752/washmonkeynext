@@ -33,7 +33,7 @@ type NavItem = {
   icon: React.ReactNode;
   route?: string;
   url?: string;
-  action?: "share" | "rate" | "logout" | "delete";
+  action?: "share" | "rate" | "logout" | "delete" | 'profile';
 };
 
 const navItems: NavItem[] = [
