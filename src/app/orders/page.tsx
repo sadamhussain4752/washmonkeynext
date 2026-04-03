@@ -78,7 +78,7 @@ export default function OrdersPage() {
   const total = orders.length;
 
   const completed = orders.filter(
-    (o) => o.paymentStatus?.toLowerCase() === "confirmed"
+    (o) => o.paymentStatus?.toLowerCase() === "Completed"
   ).length;
 
   const inProgress = total - completed;

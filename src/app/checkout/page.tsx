@@ -108,36 +108,123 @@ const {
   };
 
   /* ---------------- PAYMENT ---------------- */
-  const startPayment = async () => {
-    if (!selectedSlot) return alert("Select booking slot");
-    if (!selectedStartDateISO) return alert("Select start date");
-    if (!selectedAddress) return alert("Select address");
-    if (!selectedVehicle) return alert("Select vehicle");
-    if (!acceptedTerms) return alert("Accept terms");
+const startPayment = async () => {
+  if (!selectedSlot) return alert("Select booking slot");
+  if (!selectedStartDateISO) return alert("Select start date");
+  if (!selectedAddress) return alert("Select address");
+  if (!selectedVehicle) return alert("Select vehicle");
+  if (!acceptedTerms) return alert("Accept terms");
 
-    try {
-      setLoading(true);
-      const userId = localStorage.getItem("userId");
+  try {
+    setLoading(true);
 
-      const res = await axios.post(`${BASE_URL}api/order/hdfc/create-order`, {
-        order_id: orderId,
-        amount: total,
-        userId,
-      });
+    const userId = localStorage.getItem("userId");
 
-      const paymentLink = res.data?.paymentUrl?.payment_links?.web;
-      if (paymentLink) {
-        window.location.href = paymentLink;
-      } else {
-        alert("Payment link not found");
+    /* ---------------- TASK CREATION ---------------- */
+    const tasks = cart.flatMap((item: any) => {
+      const taskDays =
+        Number(item.item.days || 0) +
+        Number(item.item.exterior || 0) +
+        Number(item.item.interior || 0);
+
+      const tasksForItem = [];
+      let currentDate = moment(selectedStartDateISO);
+      let createdDays = 0;
+
+      while (createdDays < taskDays) {
+        // ❌ Skip Tuesday
+        if (currentDate.day() !== 2) {
+          tasksForItem.push({
+            task_id: `${Date.now()}-${Math.random()}`,
+            productId: item._id,
+            assign_date: currentDate.startOf("day").toISOString(),
+            is_done: false,
+          });
+          createdDays++;
+        }
+        currentDate = currentDate.clone().add(1, "day");
       }
-    } catch (err) {
-      console.error("Payment failed:", err);
-      alert("Payment failed");
-    } finally {
-      setLoading(false);
+
+      return tasksForItem;
+    });
+
+    /* ---------------- QUANTITIES ---------------- */
+    const quantities = cart.map((item: any) => ({
+      productId: item.item._id,
+      quantity: 1,
+    }));
+
+    /* ---------------- WASH COUNTS ---------------- */
+    const washCounts = cart.reduce(
+      (acc, item: any) => {
+        acc.interior += Number(item.item.interior || 0);
+        acc.exterior += Number(item.item.exterior || 0);
+        return acc;
+      },
+      { interior: 0, exterior: 0 }
+    );
+
+    /* ---------------- CREATE ORDER ---------------- */
+    const orderRes = await axios.post(`${BASE_URL}api/order/createOrderweb`, {
+      userId,
+      addressId: selectedAddress._id,
+      vehicleId: selectedVehicle._id,
+      productIds: items.map((item: any) => item._id || item.productId),
+      totalAmount: total,
+      bookingTime: selectedSlot,
+      walletamount: walletUsed,
+      applycoupon: promocode,
+      delivery: Number(total) === 0 ? "Wallet" : "Online",
+      paymentStatus: Number(total) === 0 ? "Confirmed" : "Pending",
+
+      // ✅ ADDED FROM placeFinalOrder
+      quantity: quantities,
+      tasks,
+      interior: washCounts.interior,
+      exterior: washCounts.exterior,
+      formwashcount: cart.reduce(
+        (sum, item: any) => sum + Number(item.item.formwash || 0),
+        0
+      ),
+    });
+
+    const orderId = orderRes.data?.order?._id;
+
+    if (!orderId) {
+      alert("Order creation failed");
+      return;
     }
-  };
+
+    localStorage.setItem("currentOrderId", orderId);
+
+    /* ---------------- ZERO PAYMENT ---------------- */
+    if (Number(total) === 0) {
+      router.push(`/payment-success?orderId=${orderId}`);
+      return;
+    }
+
+    /* ---------------- PAYMENT ---------------- */
+    const res = await axios.post(`${BASE_URL}api/order/hdfc/create-order-web`, {
+      order_id: orderId,
+      amount: total,
+      userId,
+    });
+
+    const paymentLink = res.data?.paymentUrl?.payment_links?.web;
+
+    if (paymentLink) {
+      window.location.href = paymentLink;
+    } else {
+      alert("Payment link not found");
+    }
+
+  } catch (err) {
+    console.error("Payment failed:", err);
+    alert("Payment failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ---------------- HELPERS ---------------- */
   const timeSlots = ["6:00 AM – 9:00 AM", "9:00 AM – 12:00 PM", "12:00 PM – 3:00 PM", "3:00 PM – 6:00 PM"];
