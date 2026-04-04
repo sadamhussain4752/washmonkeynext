@@ -337,7 +337,9 @@ const OrderDetailsPage = ({ orderId }: Props) => {
           </div>
         </div>
       )}
+      <div className="p-3 border-t mb-[50px]"></div>
     </div>
+
   );
 };
 

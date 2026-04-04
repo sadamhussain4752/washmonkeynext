@@ -107,6 +107,12 @@ const {
     }
   };
 
+  const generateOrderId = () => {
+    const timestamp = Date.now(); // milliseconds since 1970
+    const randomNum = Math.floor(Math.random() * 100000);
+    return `ORDER-${timestamp}-${randomNum}`;
+  };
+
   /* ---------------- PAYMENT ---------------- */
 const startPayment = async () => {
   if (!selectedSlot) return alert("Select booking slot");
@@ -147,6 +153,7 @@ const startPayment = async () => {
 
       return tasksForItem;
     });
+const productIds = cart.map((item: any) => item.item._id);
 
     /* ---------------- QUANTITIES ---------------- */
     const quantities = cart.map((item: any) => ({
@@ -163,30 +170,36 @@ const startPayment = async () => {
       },
       { interior: 0, exterior: 0 }
     );
+const customOrderId = generateOrderId();
 
     /* ---------------- CREATE ORDER ---------------- */
-    const orderRes = await axios.post(`${BASE_URL}api/order/createOrderweb`, {
-      userId,
-      addressId: selectedAddress._id,
-      vehicleId: selectedVehicle._id,
-      productIds: items.map((item: any) => item._id || item.productId),
-      totalAmount: total,
-      bookingTime: selectedSlot,
-      walletamount: walletUsed,
-      applycoupon: promocode,
-      delivery: Number(total) === 0 ? "Wallet" : "Online",
-      paymentStatus: Number(total) === 0 ? "Confirmed" : "Pending",
+   const orderRes = await axios.post(`${BASE_URL}api/order/createOrderweb`, {
+  userId,
+  addressId: selectedAddress._id,
+  vehicleId: selectedVehicle._id,
 
-      // ✅ ADDED FROM placeFinalOrder
-      quantity: quantities,
-      tasks,
-      interior: washCounts.interior,
-      exterior: washCounts.exterior,
-      formwashcount: cart.reduce(
-        (sum, item: any) => sum + Number(item.item.formwash || 0),
-        0
-      ),
-    });
+  productIds,
+  quantity: quantities,
+  orderDisplayId: customOrderId, // ✅ SAVE THIS
+
+  totalAmount: total,
+  bookingTime: selectedSlot,
+  walletamount: walletUsed,
+  applycoupon: promocode,
+
+  delivery: Number(total) === 0 ? "Wallet" : "Online",
+  paymentStatus: Number(total) === 0 ? "Confirmed" : "Pending",
+
+  tasks,
+
+  interior: washCounts.interior,
+  exterior: washCounts.exterior,
+
+  formwashcount: cart.reduce(
+    (sum, item: any) => sum + Number(item.item.formwash || 0),
+    0
+  ),
+});
 
     const orderId = orderRes.data?.order?._id;
 
@@ -204,11 +217,11 @@ const startPayment = async () => {
     }
 
     /* ---------------- PAYMENT ---------------- */
-    const res = await axios.post(`${BASE_URL}api/order/hdfc/create-order-web`, {
-      order_id: orderId,
-      amount: total,
-      userId,
-    });
+   const res = await axios.post(`${BASE_URL}api/order/hdfc/create-order-web`, {
+  order_id: customOrderId, // ✅ SAME ID
+  amount: total,
+  userId,
+});
 
     const paymentLink = res.data?.paymentUrl?.payment_links?.web;
 

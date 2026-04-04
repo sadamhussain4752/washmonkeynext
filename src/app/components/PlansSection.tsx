@@ -43,41 +43,84 @@ const PlansSection = () => {
     localStorage.setItem("cart", JSON.stringify(newCart));
     router.push("/mycard");
   };
-  const parseDescription = (html: string) => {
-    if (typeof window === "undefined") return [];
+const parseDescription = (html: string) => {
+  if (!html) return [];
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+  // ✅ CLEAN HTML
+  html = html
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .trim();
 
-    const sections: any[] = [];
-    let currentSection: any = null;
+  // ✅ SAFE split (NO "s" flag)
+  const blocks = html
+    .split(/(<p>[\s\S]*?<\/p>|<ul>[\s\S]*?<\/ul>|<ol>[\s\S]*?<\/ol>)/gi)
+    .filter(Boolean);
 
-    doc.body.childNodes.forEach((node: any) => {
+  const sections: any[] = [];
+  let currentSection: any = null;
 
-      // Section Title
-      if (node.tagName === "P") {
-        const strong = node.querySelector("strong");
-        if (strong) {
-          currentSection = {
-            title: strong.innerText,
-            items: [],
-          };
-          sections.push(currentSection);
-        }
-      }
-
-      // List Items
-      if (node.tagName === "OL" && currentSection) {
-        const items = Array.from(node.querySelectorAll("li")).map(
-          (li: any) => li.innerText
-        );
-        currentSection.items = items;
-      }
-
-    });
-
-    return sections;
+  // ✅ COMMON CLEAN FUNCTION (🔥 reuse everywhere)
+  const cleanText = (text: string) => {
+    return text
+      .replace(/<\/?[^>]+(>|$)/g, "")       // remove HTML tags
+      .replace(/^[a-zA-Z][\.\)\-]\s*/, "") // remove a. b) c-
+      .trim();
   };
+
+  blocks.forEach((block) => {
+    block = block.trim();
+
+    // -------- PARAGRAPH --------
+    const pMatch = block.match(/<p>([\s\S]*?)<\/p>/i);
+    if (pMatch) {
+      const content = pMatch[1];
+
+      const strongMatch = content.match(/<strong>(.*?)<\/strong>/i);
+
+      // ✅ Section Title
+      if (strongMatch) {
+        currentSection = {
+          title: strongMatch[1].trim(),
+          items: [],
+        };
+        sections.push(currentSection);
+      } 
+      // ✅ Normal paragraph
+      else if (currentSection) {
+        const clean = cleanText(content);
+        if (clean) currentSection.items.push(clean);
+      }
+    }
+
+    // -------- UNORDERED LIST --------
+    const ulMatch = block.match(/<ul>([\s\S]*?)<\/ul>/i);
+    if (ulMatch && currentSection) {
+      const items = ulMatch[1].match(/<li>([\s\S]*?)<\/li>/gi);
+      if (items) {
+        items.forEach((li) => {
+          const clean = cleanText(li);
+          if (clean) currentSection.items.push(clean);
+        });
+      }
+    }
+
+    // -------- ORDERED LIST --------
+    const olMatch = block.match(/<ol>([\s\S]*?)<\/ol>/i);
+    if (olMatch && currentSection) {
+      const items = olMatch[1].match(/<li>([\s\S]*?)<\/li>/gi);
+      if (items) {
+        items.forEach((li) => {
+          const clean = cleanText(li);
+          if (clean) currentSection.items.push(clean);
+        });
+      }
+    }
+  });
+
+  return sections;
+};
 
   const getIcon = (title: string) => {
     const t = title.toLowerCase();

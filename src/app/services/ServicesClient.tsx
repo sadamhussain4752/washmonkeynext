@@ -108,24 +108,79 @@ export default function ServicesClient() {
     return matchesVehicle && matchesCategory && matchesSearch;
   });
 
-  const parseDescription = (html: string) => {
+ const parseDescription = (html: string) => {
   if (!html) return [];
 
-  const div = document.createElement("div");
-  div.innerHTML = html;
+  // ✅ CLEAN HTML
+  html = html
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .trim();
+
+  // ✅ SAFE split (NO "s" flag)
+  const blocks = html
+    .split(/(<p>[\s\S]*?<\/p>|<ul>[\s\S]*?<\/ul>|<ol>[\s\S]*?<\/ol>)/gi)
+    .filter(Boolean);
 
   const sections: any[] = [];
+  let currentSection: any = null;
 
-  div.querySelectorAll("p").forEach((p) => {
-    const title = p.innerText.trim();
+  // ✅ COMMON CLEAN FUNCTION (🔥 reuse everywhere)
+  const cleanText = (text: string) => {
+    return text
+      .replace(/<\/?[^>]+(>|$)/g, "")       // remove HTML tags
+      .replace(/^[a-zA-Z][\.\)\-]\s*/, "") // remove a. b) c-
+      .trim();
+  };
 
-    const next = p.nextElementSibling;
-    if (next && next.tagName === "OL") {
-      const items = Array.from(next.querySelectorAll("li")).map(
-        (li) => li.textContent
-      );
+  blocks.forEach((block) => {
+    block = block.trim();
 
-      sections.push({ title, items });
+    // -------- PARAGRAPH --------
+    const pMatch = block.match(/<p>([\s\S]*?)<\/p>/i);
+    if (pMatch) {
+      const content = pMatch[1];
+
+      const strongMatch = content.match(/<strong>(.*?)<\/strong>/i);
+
+      // ✅ Section Title
+      if (strongMatch) {
+        currentSection = {
+          title: strongMatch[1].trim(),
+          items: [],
+        };
+        sections.push(currentSection);
+      } 
+      // ✅ Normal paragraph
+      else if (currentSection) {
+        const clean = cleanText(content);
+        if (clean) currentSection.items.push(clean);
+      }
+    }
+
+    // -------- UNORDERED LIST --------
+    const ulMatch = block.match(/<ul>([\s\S]*?)<\/ul>/i);
+    if (ulMatch && currentSection) {
+      const items = ulMatch[1].match(/<li>([\s\S]*?)<\/li>/gi);
+      if (items) {
+        items.forEach((li) => {
+          const clean = cleanText(li);
+          if (clean) currentSection.items.push(clean);
+        });
+      }
+    }
+
+    // -------- ORDERED LIST --------
+    const olMatch = block.match(/<ol>([\s\S]*?)<\/ol>/i);
+    if (olMatch && currentSection) {
+      const items = olMatch[1].match(/<li>([\s\S]*?)<\/li>/gi);
+      if (items) {
+        items.forEach((li) => {
+          const clean = cleanText(li);
+          if (clean) currentSection.items.push(clean);
+        });
+      }
     }
   });
 
@@ -447,13 +502,13 @@ const getIcon = (title: string) => {
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t">
+      <div className="p-3 border-t mb-[80px]">
         <button
           onClick={() => {
             addToCart(selectedPlan);
             setOpen(false);
           }}
-          className="w-full bg-red-600 text-white py-2 rounded-lg text-sm"
+           className="w-full bg-primary text-white py-2 rounded-lg text-sm "
         >
           Book Now
         </button>
@@ -462,6 +517,7 @@ const getIcon = (title: string) => {
     </div>
   </div>
 )}
+
     </div>
   );
 }
