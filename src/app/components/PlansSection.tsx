@@ -173,7 +173,7 @@ const parseDescription = (html: string) => {
                   <img
                     src={plan.image}
                     alt={plan.name}
-                    className="w-full h-24 object-contain bg-gray-50"
+                    className=" h-24 object-contain bg-gray-50"
                   />
                   <div className="absolute top-2 right-2">
                     <Heart size={16} className="text-gray-400" />
@@ -248,63 +248,66 @@ const parseDescription = (html: string) => {
               </div>
 
               {/* ================= DESKTOP CARD (OLD DESIGN) ================= */}
-            <Card className="hidden md:block overflow-hidden h-full hover:shadow-xl transition-shadow border-2 border-primary">
+           <Card className="hidden md:block overflow-hidden h-full hover:shadow-lg transition border border-gray-200">
 
-                <img
-                  src={plan.image}
-                  alt={plan.name}
-                  className="w-full h-58 object-cover"
-                />
+  {/* Image (reduced height) */}
+  <img
+    src={plan.image}
+    alt={plan.name}
+    className="w-full h-40 object-cover"
+  />
 
-                <div className="p-6 flex flex-col h-full">
-                   <p className=" text-xl text-primary font-medium">
-                          {plan.category[0]}
-                        </p>
-                  <h3 className=" text-[17px] mb-1  font-semibold">
-                    {plan.name}
-                  </h3>
-                  
+  <div className="p-4 flex flex-col h-full">
 
-                  {/* <div
-                    className="text-gray-600 mb-4 text-sm"
-                    dangerouslySetInnerHTML={{ __html: plan.description }}
-                  /> */}
+    {/* Category */}
+    <p className="text-sm text-primary font-medium">
+      {plan.category[0]}
+    </p>
 
-                 <div className="mb-4">
-                   {plan.offeramount && (
-                          <span className="text-[22px] text-gray-400 line-through  mx-2 ">
-                            ₹{plan.offeramount}
-                          </span>
-                        )}
-                  
-  <span className="text-3xl font-bold text-primary-500">
-    ₹{plan.price}
-  </span>
-  
-  <span className="text-gray-500 text-sm">
-    {" "} / {plan.days === 1 ? "service" : "Month"}
-  </span>
-</div>
+    {/* Title */}
+    <h3 className="text-sm font-semibold mb-1 line-clamp-2">
+      {plan.name}
+    </h3>
 
-                  <ul className="space-y-2 mb-6">
-                    <li className="flex items-start text-sm">
-                      <CheckCircle className="w-4 h-4 text-primary mr-2 mt-0.5" />
-                      {plan.days + plan.interior} Days 
-                    </li>
-                    <li className="flex items-start text-sm">
-                      <CheckCircle className="w-4 h-4 text-primary mr-2 mt-0.5" />
-                      Interior: {plan.interior} times
-                    </li>
-                  </ul>
+    {/* Price */}
+    <div className="mb-3 flex items-center gap-2">
+      {plan.offeramount && (
+        <span className="text-sm text-gray-400 line-through">
+          ₹{plan.offeramount}
+        </span>
+      )}
 
-                  <Button
-                    onClick={() => addToCart(plan)}
-                    className="w-full"
-                  >
-                    Book Now
-                  </Button>
-                </div>
-              </Card>
+      <span className="text-lg font-bold text-primary">
+        ₹{plan.price}
+      </span>
+
+      <span className="text-xs text-gray-500">
+        / {plan.days === 1 ? "service" : "month"}
+      </span>
+    </div>
+
+    {/* Features */}
+    <ul className="space-y-1 mb-4 text-xs">
+      <li className="flex items-center">
+        <CheckCircle className="w-3 h-3 text-primary mr-1" />
+        {plan.days + plan.interior} Days
+      </li>
+      <li className="flex items-center">
+        <CheckCircle className="w-3 h-3 text-primary mr-1" />
+        Interior: {plan.interior} times
+      </li>
+    </ul>
+
+    {/* Button */}
+    <Button
+      onClick={() => addToCart(plan)}
+      className="w-full text-xs py-2"
+    >
+      Book Now
+    </Button>
+
+  </div>
+</Card>
 
             </motion.div>
           ))}

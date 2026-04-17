@@ -36,7 +36,6 @@ import {
   Share2,
   Star,
   HelpCircle,
-  Trash2,
   House
 } from "lucide-react";
 
@@ -57,60 +56,41 @@ export default function Header() {
   const [userId, setUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-
   const desktopNavItems = [
-    { path: "/", label: "Home", icon: <House size={18} /> },
-    { path: "/about", label: "About Us", icon: <User size={18} /> },
-    { path: "/services", label: "Services", icon: <ShoppingBag size={18} /> },
-    { path: "/help", label: "Help & Support", icon: <HelpCircle size={18} /> },
-
-    { path: "/contact", label: "Contact Us", icon: <Phone size={18} /> },
+    { path: "/", label: "Home" },
+    { path: "/about", label: "About Us" },
+    { path: "/services", label: "Services" },
+    { path: "/help", label: "Help & Support" },
+    { path: "/contact", label: "Contact Us" },
   ];
 
   const userNavItems: NavItem[] = [
-    //  { route: "/", label: "Home", icon: <House size={20} /> },
-    // { route: "/services", label: "Services", icon: <ShoppingBag size={20} /> },
-    // { route: "/help", label: "Help", icon: <HelpCircle size={20} /> },
-    { label: "My Profile", icon: <User size={20} color="red" />, route: "/profile" },
-    { label: "My Orders", icon: <Package size={20} color="red" />, route: "/orders" },
-
-    { label: "Vehicles", icon: <Car size={20} color="red" />, route: "/vehicles" },
-    { label: "Addresses", icon: <MapPin size={20} color="red" />, route: "/addresses" },
-    { label: "Transaction History", icon: <Wallet size={20} color="red" />, route: "/wallet" },
+    { label: "My Profile", icon: <User size={18} />, route: "/profile" },
+    { label: "My Orders", icon: <Package size={18} />, route: "/orders" },
+    { label: "Vehicles", icon: <Car size={18} />, route: "/vehicles" },
+    { label: "Addresses", icon: <MapPin size={18} />, route: "/addresses" },
+    { label: "Transaction History", icon: <Wallet size={18} />, route: "/wallet" },
     {
       label: "T & C",
-      icon: <FileText size={20} color="red" />,
+      icon: <FileText size={18} />,
       url: "https://washmonkey.in/terms-and-conditions.html",
     },
-    { label: "Share App", icon: <Share2 size={20} color="red" />, action: "share" },
-    { label: "Rate Our App", icon: <Star size={20} color="red" />, action: "rate" },
-    { label: "Help & Support", icon: <HelpCircle size={20} color="red" />, route: "/help" },
-    { label: "Logout", icon: <LogOut size={20} color="red" />, action: "logout" },
-    // {
-    //   label: "Delete Account",
-    //   icon: <Trash2 size={20} className="text-red-600" />,
-    //   action: "delete",
-    // },
+    { label: "Share App", icon: <Share2 size={18} />, action: "share" },
+    { label: "Rate Our App", icon: <Star size={18} />, action: "rate" },
+    { label: "Help & Support", icon: <HelpCircle size={18} />, route: "/help" },
+    { label: "Logout", icon: <LogOut size={18} />, action: "logout" },
   ];
 
   const userNavItemsLog: NavItem[] = [
-    
     {
       label: "T & C",
-      icon: <FileText size={20} color="red" />,
+      icon: <FileText size={18} />,
       url: "https://washmonkey.in/terms-and-conditions.html",
     },
-    { label: "Share App", icon: <Share2 size={20} color="red" />, action: "share" },
-    { label: "Rate Our App", icon: <Star size={20} color="red" />, action: "rate" },
-    { label: "Help & Support", icon: <HelpCircle size={20} color="red" />, route: "/help" },
-        { label: "Login", icon: <LogOut size={20} color="red" />, route: "/login" },
-
-    // { label: "Logout", icon: <LogOut size={20} color="red" />, action: "logout" },
-    // {
-    //   label: "Delete Account",
-    //   icon: <Trash2 size={20} className="text-red-600" />,
-    //   action: "delete",
-    // },
+    { label: "Share App", icon: <Share2 size={18} />, action: "share" },
+    { label: "Rate Our App", icon: <Star size={18} />, action: "rate" },
+    { label: "Help & Support", icon: <HelpCircle size={18} />, route: "/help" },
+    { label: "Login", icon: <User size={18} />, route: "/login" },
   ];
 
   /* ---------------- CLIENT STORAGE ---------------- */
@@ -133,7 +113,7 @@ export default function Header() {
         });
         setUser(res.data?.User || null);
       } catch (err) {
-        console.error("Failed to load user", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -144,273 +124,164 @@ export default function Header() {
 
   /* ---------------- ACTION HANDLER ---------------- */
   const handleAction = (action?: string) => {
-    switch (action) {
-      case "logout":
-        localStorage.clear();
-        router.push("/login");
-        window.location.href = "/login";
+    if (action === "logout") {
+      localStorage.clear();
+      router.push("/login"); // ✅ removed reload
+    }
 
+    if (action === "share") {
+      navigator.share?.({
+        title: "WashMonkey",
+        text: "Check out this app!",
+        url: window.location.href,
+      });
+    }
 
-        break;
-      case "share":
-        if (navigator.share) {
-          navigator.share({
-            title: "WashMonkey",
-            text: "Check out this app!",
-            url: window.location.href,
-          });
-        } else {
-          alert("Share is not supported on this device");
-        }
-        break;
-      case "rate":
-        window.open("https://play.google.com/store/apps/details?id=com.washmonkey.app", "_blank");
-        break;
-      case "delete":
-        if (confirm("Are you sure you want to delete your account?")) {
-          // Add delete API call here
-          alert("Account deleted!");
-        }
-        break;
+    if (action === "rate") {
+      window.open("https://play.google.com/store/apps/details?id=com.washmonkey.app", "_blank");
     }
   };
 
   return (
     <>
-     {/* 🔴 TOP ANNOUNCEMENT BAR */}
-    <div className="bg-red-500 text-white text-sm overflow-hidden">
-      <div className="whitespace-nowrap animate-marquee px-4 py-1">
-       ⏰ Working Hours: Wed - Mon | 9:00 AM - 6:00 PM (Tuesday Holiday) 🚗 Book your service anytime!
+      {/* 🔴 TOP BAR */}
+      <div className="bg-red-500 text-white text-xs overflow-hidden">
+        <div className="whitespace-nowrap animate-marquee px-4 py-1">
+          ⏰ Wed - Mon | 9:00 AM - 6:00 PM (Tuesday Holiday)
+        </div>
       </div>
-    </div>
+
       <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
 
-        {/* LOGO */}
-        <Link href="/" className="flex items-center gap-2">
-          <Image src={Logo} alt="Logo" width={120} height={60} priority />
-        </Link>
+          {/* LOGO */}
+          <Link href="/" className="flex items-center">
+            <Image src={Logo} alt="Logo" width={110} height={50} />
+          </Link>
 
-
-        {/* DESKTOP NAV */}
-        <nav className="hidden md:flex items-center gap-8">
-          {desktopNavItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`font-medium transition ${pathname === item.path
-                ? "text-red-600"
-                : "text-gray-600 hover:text-red-600"
+          {/* NAV */}
+          <nav className="hidden md:flex items-center gap-6">
+            {desktopNavItems.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`text-sm font-medium ${
+                  pathname === item.path
+                    ? "text-red-600"
+                    : "text-gray-600 hover:text-red-600"
                 }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* RIGHT */}
+          <div className="hidden md:flex items-center gap-4">
+
+            {/* WALLET */}
+            {!loading && user && (
+              <Link href="/wallet" className="flex items-center gap-1 text-xs text-gray-700">
+                ₹{user.loyalty_point ?? 0}
+                <Wallet size={14} />
+              </Link>
+            )}
+
+            {/* PHONE */}
+            <a href="tel:+918148274827" className="flex items-center gap-1 text-xs text-gray-700">
+              <Phone size={14} />
+              +91 81482 74827
+            </a>
+
+            {/* PROFILE */}
+            {!loading && user && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-2">
+                    <Image
+                      src={
+                        user?.profile_img?.trim()
+                          ? user.profile_img
+                          : "https://ui-avatars.com/api/?name=User"
+                      }
+                      alt="Profile"
+                      width={28}
+                      height={28}
+                      className="rounded-full border"
+                    />
+                    <span className="text-xs">{user.firstname}</span>
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent align="end" className="w-56 p-2 text-sm">
+                  {userNavItems.map((item) =>
+                    item.route ? (
+                      <Link key={item.label} href={item.route} className="flex gap-2 px-2 py-1 hover:bg-gray-100 rounded">
+                        {item.icon} {item.label}
+                      </Link>
+                    ) : item.url ? (
+                      <a key={item.label} href={item.url} target="_blank" className="flex gap-2 px-2 py-1 hover:bg-gray-100 rounded">
+                        {item.icon} {item.label}
+                      </a>
+                    ) : (
+                      <button key={item.label} onClick={() => handleAction(item.action)} className="flex gap-2 px-2 py-1 w-full hover:bg-gray-100 rounded">
+                        {item.icon} {item.label}
+                      </button>
+                    )
+                  )}
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {/* LOGIN / LOGOUT */}
+            <Button
+              className="text-xs px-3 py-1 bg-red-600 hover:bg-red-700 text-white"
+              onClick={() =>
+                !user ? router.push("/login") : handleAction("logout")
+              }
             >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+              {!user ? "Login" : "Logout"}
+            </Button>
+          </div>
 
-        {/* DESKTOP ACTIONS */}
-        <div className="hidden md:flex items-center gap-6">
+          {/* MOBILE */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost">
+                <Menu />
+              </Button>
+            </SheetTrigger>
 
-          {/* WALLET */}
-          {!loading && user && (
-            <Link
-              href="/wallet"
-              className="flex items-center gap-1 font-medium text-gray-600 hover:text-red-600"
-            >
-              ₹{user.loyalty_point ?? 0} <Wallet className="w-4 h-4" />
+            <SheetContent>
+              <div className="flex flex-col gap-4 mt-6 text-sm">
 
-            </Link>
-          )}
-
-          {/* PHONE */}
-          <a
-            href="tel:+918148274827"
-            className="flex items-center gap-2 text-gray-600 hover:text-red-600"
-          >
-            <Phone className="w-4 h-4" />
-            +91 81482 74827
-          </a>
-
-          {/* PROFILE MENU */}
-          {!loading && user && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="flex items-center gap-2">
-                  <Image
-                    src={
-                      user?.profile_img?.trim()
-                        ? user.profile_img
-                        : "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff"
-                    }
-                    alt="Profile"
-                    width={32}
-                    height={32}
-                    className="rounded-full border object-cover"
-                  />
-                  <span className="text-sm font-medium text-gray-700">{user.firstname}</span>
-                </button>
-              </PopoverTrigger>
-
-              <PopoverContent align="end" className="w-60 p-3">
-
-                {/* USER INFO */}
-                <div className="mb-3">
-                  <p className="font-semibold">{user.firstname} {user.lastname}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                </div>
-
-                {user.mainAddress && (
-                  <div className="flex items-start gap-2 text-xs text-gray-600 mb-3">
-                    <MapPin className="w-4 h-4 mt-0.5" color="red" />
-                    <span>{user.mainAddress.city}, {user.mainAddress.state}</span>
-                  </div>
-                )}
-
-                {/* DYNAMIC USER NAV ITEMS */}
-                { userNavItems.map((item) =>
+                {(user ? userNavItems : userNavItemsLog).map((item) =>
                   item.route ? (
-                    <Link
-                      key={item.label}
-                      href={item.route}
-                      className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded"
-                    >
-                      {item.icon} {item.label}
-                    </Link>
+                    <SheetClose asChild key={item.label}>
+                      <Link href={item.route} className="flex gap-2 items-center">
+                        {item.icon} {item.label}
+                      </Link>
+                    </SheetClose>
                   ) : item.url ? (
-                    <a
-                      key={item.label}
-                      href={item.url}
-                      target="_blank"
-                      className="flex gap-2 px-3 py-2 hover:bg-gray-100 rounded"
-                    >
-                      {item.icon} {item.label}
-                    </a>
+                    <SheetClose asChild key={item.label}>
+                      <a href={item.url} target="_blank" className="flex gap-2 items-center">
+                        {item.icon} {item.label}
+                      </a>
+                    </SheetClose>
                   ) : (
-                    <button
-                      key={item.label}
-                      onClick={() => handleAction(item.action)}
-                      className={`flex gap-2 px-3 py-2 rounded w-full ${item.action === "delete" ? "text-red-600 hover:bg-red-50" : "hover:bg-gray-100"
-                        }`}
-                    >
-                      {item.icon} {item.label}
-                    </button>
+                    <SheetClose asChild key={item.label}>
+                      <button onClick={() => handleAction(item.action)} className="flex gap-2 items-center w-full">
+                        {item.icon} {item.label}
+                      </button>
+                    </SheetClose>
                   )
                 )}
 
-              </PopoverContent>
-            </Popover>
-          )}
-
-          
-  <Button className="flex items-center gap-2" onClick={()=>{
-    !user ? router.push('/login') : handleAction('logout')
-  }}>
-    <User size={18} />
-   {!user ? "Login" : "logout"}
-  </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
-
-        {/* MOBILE MENU */}
-        <Sheet>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="w-6 h-6" />
-            </Button>
-
-          </SheetTrigger>
-
-          <SheetContent>
-            <div className="flex flex-col gap-6 mt-8 p-10">
-              {!loading && user && (
-                <div className="mb-4">
-                  <p className="font-semibold">{user.firstname} {user.lastname}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                  {user.mainAddress && (
-                    <div className="flex items-start gap-2 text-xs text-gray-600 mt-1">
-                      <MapPin className="w-4 h-4 mt-0.5" color="red" />
-                      <span>{user.mainAddress.city}, {user.mainAddress.state}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 mt-2 font-medium">
-                    <Wallet className="w-5 h-5" color="red" />
-                    <span>₹{user.loyalty_point ?? 0}</span>
-                  </div>
-                </div>
-              )}
-
-
-
-
-
-              {/* WALLET & PHONE */}
-
-              {/* USER NAV ITEMS */}
-              {user ?
-              
-              userNavItems.map((item) =>
-                item.route ? (
-                  <SheetClose asChild key={item.label}>
-                    <Link href={item.route} className="flex gap-2 items-center text-black-600 font-medium">
-                      {item.icon} {item.label}
-                    </Link>
-                  </SheetClose>
-                ) : item.url ? (
-                  <SheetClose asChild key={item.label}>
-                    <a href={item.url} target="_blank" className="flex gap-2 items-center text-black-600 font-medium">
-                      {item.icon} {item.label}
-                    </a>
-                  </SheetClose>
-                ) : (
-                  <SheetClose asChild key={item.label}>
-                    <button
-                      onClick={() => handleAction(item.action)}
-                      className={`flex gap-2 items-center w-full ${item.action === "delete" ? "text-red-600" : ""
-                        }`}
-                    >
-                      {item.icon} {item.label}
-                    </button>
-                  </SheetClose>
-                )
-              ) : userNavItemsLog.map((item) =>
-                item.route ? (
-                  <SheetClose asChild key={item.label}>
-                    <Link href={item.route} className="flex gap-2 items-center text-black-600 font-medium">
-                      {item.icon} {item.label}
-                    </Link>
-                  </SheetClose>
-                ) : item.url ? (
-                  <SheetClose asChild key={item.label}>
-                    <a href={item.url} target="_blank" className="flex gap-2 items-center text-black-600 font-medium">
-                      {item.icon} {item.label}
-                    </a>
-                  </SheetClose>
-                ) : (
-                  <SheetClose asChild key={item.label}>
-                    <button
-                      onClick={() => handleAction(item.action)}
-                      className={`flex gap-2 items-center w-full ${item.action === "delete" ? "text-red-600" : ""
-                        }`}
-                    >
-                      {item.icon} {item.label}
-                    </button>
-                  </SheetClose>
-                )
-              )}
-              {!loading && user && (
-                <>
-
-                  <a href="tel:+918148274827" className="flex items-center gap-2  text-black-600 font-medium mt-5">
-                    <Phone className="w-5 h-5" color="red" /> +91 81482 74827
-                  </a>
-                </>
-              )}
-
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-    </header>
+      </header>
     </>
-  
   );
 }

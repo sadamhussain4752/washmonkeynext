@@ -8,6 +8,7 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Label } from "@/app/components/ui/label";
 import Link from "next/link";
+import {  useRouter } from "next/navigation";
 
 import { BASE_URL } from "@/app/utils/config";
 
@@ -37,7 +38,7 @@ const complaintOptions = [
       "Dashboard", "Door Jambs", "Floor Mats", "Others"
     ],
     requiredInputs: ["Date of Service", "Vehicle Type"],
-    optionalInputs: ["Time Slot", "Comments", "Photo Upload"]
+    optionalInputs: ["Time Slot", "Photo Upload"]
   },
   {
     issue: "Water Usage",
@@ -46,7 +47,7 @@ const complaintOptions = [
       "Water Wastage (Waterless Not Followed)", "Others"
     ],
     requiredInputs: ["Date of Service", "Vehicle Type","Time Slot"],
-    optionalInputs: ["Comments", "Photo Upload"]
+    optionalInputs: [ "Photo Upload"]
   },
   {
     issue: "Payment & Billing",
@@ -56,7 +57,7 @@ const complaintOptions = [
       "Payment Failed / Not Reflected", "Others"
     ],
     requiredInputs: ["Payment Amount", "Payment Date"],
-    optionalInputs: ["Mode of Payment", "Transaction ID", "Comments"]
+    optionalInputs: ["Mode of Payment", "Transaction ID",]
   },
   {
     issue: "Staff Behaviour",
@@ -65,7 +66,7 @@ const complaintOptions = [
       "Incomplete Cleaning & Left Early", "Different Staff Came", "Others"
     ],
     requiredInputs: ["Date of Incident","Vehicle Type", "Time Slot"],
-    optionalInputs: ["Staff Name", "Comments", "Photo Upload"]
+    optionalInputs: ["Staff Name", "Photo Upload"]
   },
   {
     issue: "Damage to Property",
@@ -74,7 +75,7 @@ const complaintOptions = [
       "Chemical Spill Inside Car", "Pressure Wash Damage", "Property (Home) Damage", "Others"
     ],
     requiredInputs: ["Date of Service", "Vehicle Type"],
-    optionalInputs: ["Time Slot", "Comments", "Photo Upload"]
+    optionalInputs: ["Time Slot", "Photo Upload"]
   },
   {
     issue: "Service Unfinished",
@@ -84,7 +85,7 @@ const complaintOptions = [
       "Air Freshener Not Provided", "Others"
     ],
     requiredInputs: ["Scheduled Date", "Vehicle Type"],
-    optionalInputs: ["Time Slot", "Comments"]
+    optionalInputs: ["Time Slot"]
   },
   // {
   //   issue: "Reschedule Cancel",
@@ -102,7 +103,7 @@ const complaintOptions = [
       "Booking Not Visible", "Notifications Not Received", "Others"
     ],
     requiredInputs: [],
-    optionalInputs: ["Date of Issue", "Device Info / OS", "Comments"]
+    optionalInputs: ["Date of Issue", "Device Info / OS"]
   },
   {
     issue: "General Feedback",
@@ -110,7 +111,7 @@ const complaintOptions = [
       "Suggestion", "Feedback on Service Quality", "Complaint Not Listed Above"
     ],
     requiredInputs: [],
-    optionalInputs: ["Comments", "Date","Photo Upload"]
+    optionalInputs: [ "Date","Photo Upload"]
   }
 ];
 
@@ -122,6 +123,7 @@ const timeSlots = [
 ];
 
 export default function HelpPage() {
+   const router = useRouter();
   const [selectedIssue, setSelectedIssue] = useState(complaintOptions[0]);
   const [selectedSubIssue, setSelectedSubIssue] = useState("");
   const [formValues, setFormValues] = useState<any>({});
@@ -140,39 +142,50 @@ export default function HelpPage() {
 
   
 
-  const handleSubmit = async () => {
-    try {
-      const formData = new FormData();
-  const userId : any =
-    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-      formData.append("issue", selectedIssue.issue);
-      formData.append("userId", userId);
-      formData.append("subIssue", selectedSubIssue);
-      formData.append("description", description);
-      formData.append("details", JSON.stringify(formValues));
+ const handleSubmit = async () => {
+  try {
+    const userId =
+      typeof window !== "undefined"
+        ? localStorage.getItem("userId")
+        : null;
 
-      if (image) {
-        formData.append("file", image);
-      }
+    // ✅ LOGIN CHECK
+    if (!userId) {
+      alert("Please login to submit your request");
+      router.push("/login"); // redirect
+      return;
+    }
 
+    const formData = new FormData();
 
-       await axios.post(`${BASE_URL}api/support/create`, formData, {
+    formData.append("issue", selectedIssue.issue);
+    formData.append("userId", userId);
+    formData.append("subIssue", selectedSubIssue);
+    formData.append("description", description);
+    formData.append("details", JSON.stringify(formValues));
+
+    if (image) {
+      formData.append("file", image);
+    }
+
+    await axios.post(`${BASE_URL}api/support/create`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
-     // ✅ RESET ALL FIELDS
+
+    // RESET
     setSelectedIssue(complaintOptions[0]);
     setSelectedSubIssue("");
     setFormValues({});
     setDescription("");
     setImage(null);
 
-      alert("Submitted successfully");
-    } catch (err) {
-      alert("Error submitting");
-    }
-  };
+    alert("Submitted successfully");
+  } catch (err) {
+    alert("Error submitting");
+  }
+};
 
   const handleDesktopSubmit = async (e: any) => {
     e.preventDefault();

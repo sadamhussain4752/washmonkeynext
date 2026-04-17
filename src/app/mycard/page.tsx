@@ -53,46 +53,58 @@ export default function OrderPage() {
   const gst = netTotal > 0 ? netTotal * 0.18 : 0;
   const total = netTotal > 0 ? netTotal + gst : 0;
 
-  /* ================= APPLY COUPON ================= */
-  const applyCoupon = async () => {
-    if (!promocode) return;
+ const applyCoupon = async () => {
+  if (!promocode?.trim()) {
+    alert("Please enter a coupon code");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const userId = localStorage.getItem("userId");
+  try {
+    const userId = localStorage.getItem("userId");
 
-      const res = await axios.post(BASE_URL + ENDPOINTS.get.discount, {
-        couponCode: promocode,
-        userId,
-      });
+    const res = await axios.post(BASE_URL + ENDPOINTS.get.discount, {
+      couponCode: promocode,
+      userId,
+    });
 
-      if (res.data?.success) {
-        const type = res.data.bodysend?.coupon_type;
-        let value = 0;
+    const data = res.data;
 
-        if (type === "PERCENTAGE") {
-          value = (subtotal * Number(res.data.bodysend.discount)) / 100;
-        } else {
-          value = Number(res.data.bodysend.discount);
-        }
+    if (data?.success && data?.bodysend?.discount) {
+      const type = data.bodysend.coupon_type;
+      const discountValue = Number(data.bodysend.discount);
 
-        setDiscount(value);
-        alert("Coupon Applied 🎉");
+      let value = 0;
+
+      if (type === "PERCENTAGE") {
+        value = (subtotal * discountValue) / 100;
       } else {
-        alert("Invalid coupon");
+        value = discountValue;
       }
-    } catch {
-      alert("Error applying coupon");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const removeCoupon = () => {
-    setDiscount(0);
-    setPromocode("");
-  };
+      setDiscount(value);
+
+      // ✅ Fixed alert
+      alert("🎉 Woohoo! Monkey Magic Activated! Your coupon is applied. Your car is about to shine!");
+    } else {
+      alert("❌ Oops! That coupon code doesn’t seem valid. Please check and try again.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error applying coupon");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const removeCoupon = () => {
+  setDiscount(0);
+  setPromocode("");
+
+  // ✅ Added remove message
+  alert("🐒 Monkey deal removed! You can apply another coupon anytime.");
+};
 
   /* ================= WALLET ================= */
   const applyWallet = () => {

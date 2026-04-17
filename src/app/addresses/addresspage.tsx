@@ -23,6 +23,9 @@ type Address = {
   addressType?: string;
   latitude?: number;
   longitude?: number;
+    // ✅ NEW FIELD
+  parkingSlot?: string;
+
 };
 
 export default function AddressesPage() {
@@ -58,6 +61,8 @@ const {
     pinCode: "",
     email: "",
     addressType: "Home",
+     // ✅ NEW
+  parkingSlot: "",
   });
 
   /* ================= FETCH ================= */
@@ -171,6 +176,7 @@ const fetchAddresses = async () => {
         pinCode: "",
         email: "",
         addressType: "Home",
+        parkingSlot: "Home",
       });
 
       fetchAddresses();
@@ -203,79 +209,83 @@ const fetchAddresses = async () => {
   if (loading) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-100">
+  <div className="min-h-screen bg-gray-100">
+  <div className="max-w-md md:max-w-3xl lg:max-w-5xl mx-auto">
 
-      {/* HEADER */}
-      <div className="bg-white px-4 py-4 shadow-sm font-semibold text-lg">
-        Addresses
-      </div>
+    {/* HEADER */}
+    <div className="bg-white px-4 py-4 shadow-sm font-semibold text-lg">
+      Addresses
+    </div>
 
-      {/* LIST */}
-      <div className="p-4 space-y-4 pb-32">
-        {addresses.map((item) => (
-          <div
-            key={item._id}
-            onClick={() => setSelectedAddress(item._id!)}
-            className={`p-4 rounded-2xl border cursor-pointer ${
-              selectedAddress === item._id
-                ? "border-red-500 bg-red-50"
-                : "bg-white"
-            }`}
-          >
-            <div className="flex justify-between">
-              <h3 className="font-semibold">{item.fullName}</h3>
+    {/* LIST */}
+    <div className="p-4 pb-32 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {addresses.map((item) => (
+        <div
+          key={item._id}
+          onClick={() => setSelectedAddress(item._id!)}
+          className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 ${
+            selectedAddress === item._id
+              ? "border-red-500 bg-red-50"
+              : "bg-white hover:shadow-md"
+          }`}
+        >
+          <div className="flex justify-between">
+            <h3 className="font-semibold">{item.fullName}</h3>
 
-              <div className="flex gap-2 text-sm">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(item);
-                  }}
-                  className="text-red-500"
-                >
-                  Edit
-                </button>
+            <div className="flex gap-2 text-sm">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item);
+                }}
+                className="text-red-500"
+              >
+                Edit
+              </button>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(item._id!);
-                  }}
-                  className="text-gray-400"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-500 mt-1">
-              {item.street}, {item.city}, {item.state} - {item.pinCode}
-            </p>
-
-            <div className="flex gap-4 text-xs text-gray-400 mt-2">
-              <span>📞 {item.phone}</span>
-              <span>✉️ {item.email}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(item._id!);
+                }}
+                className="text-gray-400"
+              >
+                Remove
+              </button>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* ADD BUTTON */}
-      <div className="fixed bottom-20 left-0 right-0 px-4">
+          <p className="text-sm text-gray-500 mt-1">
+            {item.street}, {item.city}, {item.state} - {item.pinCode}
+          </p>
+
+          <div className="flex gap-4 text-xs text-gray-400 mt-2">
+            <span>📞 {item.phone}</span>
+            <span>✉️ {item.email}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* ADD BUTTON */}
+    <div className="fixed bottom-6 left-0 right-0 px-4 md:px-0">
+      <div className="max-w-md md:max-w-xl lg:max-w-2xl mx-auto">
         <button
           onClick={() => {
             setShowModal(true);
             getCurrentLocation();
           }}
-          className="w-full border-2 border-dashed border-red-400 text-red-500 py-3 rounded-xl font-medium"
+          className="w-full border-2 border-dashed border-red-400 text-red-500 py-3 rounded-xl font-medium bg-white"
         >
           + Add Address
         </button>
       </div>
+    </div>
 
-      {/* CHECKOUT BUTTON */}
-      {fromCheckout && selectedAddress && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white">
+    {/* CHECKOUT BUTTON */}
+    {fromCheckout && selectedAddress && (
+      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow md:px-0">
+        <div className="max-w-md md:max-w-xl lg:max-w-2xl mx-auto">
           <button
             onClick={() => router.push("/checkout")}
             className="w-full bg-red-500 text-white py-3 rounded-xl"
@@ -283,120 +293,126 @@ const fetchAddresses = async () => {
             Deliver to this address
           </button>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* MODAL */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-end z-50">
-          <div className="bg-white w-full rounded-t-3xl p-4 max-h-[95vh] overflow-y-auto relative">
+    {/* MODAL */}
+    {showModal && (
+      <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50">
+        <div className="bg-white w-full md:max-w-lg lg:max-w-xl rounded-t-3xl md:rounded-2xl p-4 max-h-[95vh] overflow-y-auto relative">
 
-            {/* CLOSE BUTTON */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"
-            >
-              <X size={18} />
-            </button>
-
-            <h2 className="text-lg font-semibold mb-3">
-              {editingId ? "Edit Address" : "Add Address"}
-            </h2>
-            <div className="mb-3 relative">
-  <input
-    value={value}
-    onChange={(e) => setValue(e.target.value)}
-    disabled={!ready}
-    placeholder="Search your location..."
-    className="w-full p-3 rounded-xl bg-gray-100"
-  />
-
-  {/* Suggestions */}
-  {status === "OK" && (
-    <div className="absolute bg-white w-full shadow-md rounded-xl mt-1 z-50 max-h-40 overflow-y-auto">
-      {data.map((suggestion) => {
-        const {
-          place_id,
-          structured_formatting: { main_text, secondary_text },
-        } = suggestion;
-
-        return (
-          <div
-            key={place_id}
-            onClick={() => handleSelect(suggestion)}
-            className="p-3 hover:bg-gray-100 cursor-pointer"
+          {/* CLOSE */}
+          <button
+            onClick={() => setShowModal(false)}
+            className="absolute top-4 right-4 bg-gray-100 p-2 rounded-full"
           >
-            <p className="font-medium">{main_text}</p>
-            <p className="text-xs text-gray-500">{secondary_text}</p>
-          </div>
-        );
-      })}
-    </div>
-  )}
-</div>
+            <X size={18} />
+          </button>
 
-            {/* MAP */}
-            {location && (
-              <iframe
-                className="w-full h-44 rounded-xl mb-3"
-                src={`https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
-              />
+          <h2 className="text-lg font-semibold mb-3">
+            {editingId ? "Edit Address" : "Add Address"}
+          </h2>
+
+          {/* SEARCH */}
+          <div className="mb-3 relative">
+            <input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              disabled={!ready}
+              placeholder="Search your location..."
+              className="w-full p-3 rounded-xl bg-gray-100"
+            />
+
+            {status === "OK" && (
+              <div className="absolute bg-white w-full shadow-md rounded-xl mt-1 z-50 max-h-40 overflow-y-auto">
+                {data.map((suggestion) => {
+                  const {
+                    place_id,
+                    structured_formatting: { main_text, secondary_text },
+                  } = suggestion;
+
+                  return (
+                    <div
+                      key={place_id}
+                      onClick={() => handleSelect(suggestion)}
+                      className="p-3 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <p className="font-medium">{main_text}</p>
+                      <p className="text-xs text-gray-500">
+                        {secondary_text}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* MAP */}
+          {location && (
+            <iframe
+              className="w-full h-44 rounded-xl mb-3"
+              src={`https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`}
+            />
+          )}
+
+          <button
+            onClick={getCurrentLocation}
+            className="text-red-500 text-sm mb-3"
+          >
+            📍 Use Current Location
+          </button>
+
+          {/* FORM */}
+          <div className="space-y-3">
+            {["fullName", "email", "street", "city", "state", "pinCode", "phone", "parkingSlot"].map(
+              (field) => (
+                <input
+                  key={field}
+                  placeholder={field}
+                  value={(form as any)[field]}
+                  onChange={(e) =>
+                    setForm({ ...form, [field]: e.target.value })
+                  }
+                  className="w-full h-11 px-3 rounded-xl bg-gray-100 outline-none"
+                />
+              )
             )}
 
-            <button
-              onClick={getCurrentLocation}
-              className="text-red-500 text-sm mb-3"
-            >
-              📍 Use Current Location
-            </button>
-
-            {/* FORM */}
-            <div className="space-y-3">
-              {["fullName", "email", "street", "city", "state", "pinCode", "phone"].map(
-                (field) => (
-                  <input
-                    key={field}
-                    placeholder={field}
-                    value={(form as any)[field]}
-                    onChange={(e) =>
-                      setForm({ ...form, [field]: e.target.value })
-                    }
-                    className="w-full h-11 px-3 rounded-xl bg-gray-100 outline-none"
-                  />
-                )
-              )}
-
-              {/* TYPE */}
-              <div className="flex gap-2">
-                {["Home", "Office", "Others"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() =>
-                      setForm({ ...form, addressType: type })
-                    }
-                    className={`flex-1 py-2 rounded-xl ${
-                      form.addressType === type
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-100"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* SAVE */}
-            <div className="sticky bottom-0 bg-white pt-4 ">
-              <button
-                onClick={handleSave}
-                className="w-full bg-red-500 text-white py-3 rounded-xl font-semibold mb-17"
-              >
-                {saving ? "Saving..." : "Save Address"}
-              </button>
+            {/* TYPE */}
+            <div className="flex gap-2">
+              {["Home", "Office", "Others"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() =>
+                    setForm({ ...form, addressType: type })
+                  }
+                  className={`flex-1 py-2 rounded-xl ${
+                    form.addressType === type
+                      ? "bg-red-500 text-white"
+                      : "bg-gray-100"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
             </div>
           </div>
+
+          {/* SAVE */}
+          <div className="sticky bottom-0 bg-white pt-4">
+            <button
+              onClick={handleSave}
+              className="w-full bg-red-500 text-white py-3 rounded-xl font-semibold"
+            >
+              {saving ? "Saving..." : "Save Address"}
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+
+  </div>
+</div>
   );
 }
